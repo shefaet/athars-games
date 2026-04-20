@@ -1,6 +1,6 @@
-# Athar's Math Games
+# Athar's Games
 
-Interactive browser games built around Athar's kindergarten math curriculum.
+Interactive browser games built around Athar's kindergarten curriculum.
 
 ## Games
 
@@ -25,4 +25,4 @@ All images and sounds live in the `assets/` folder.
 
 ## Curriculum
 
-See `curriculum.md` for the full kindergarten math curriculum pulled from classroom newsletters.
+See `curriculum.md` for the full kindergarten curriculum pulled from classroom newsletters.
