@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Athar's Math Games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frijole&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background: #0a0a1e;
+      font-family: 'Frijole', 'Comic Sans MS', cursive;
+      color: #fff;
+    }
+
+    header {
+      text-align: center;
+      padding: 48px 24px 24px;
+    }
+    header h1 {
+      font-size: clamp(28px, 6vw, 56px);
+      color: #FFD700;
+      text-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    }
+    header p {
+      font-size: clamp(13px, 2vw, 18px);
+      color: #AACEFF;
+      margin-top: 8px;
+    }
+
+    .games {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: clamp(16px, 3vw, 32px);
+      padding: clamp(24px, 4vw, 48px);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .game-card {
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      width: clamp(260px, 40vw, 380px);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    }
+    .game-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .game-card-img {
+      width: 100%;
+      height: clamp(120px, 20vw, 200px);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .game-card-body {
+      padding: clamp(14px, 2.5vw, 24px);
+    }
+    .game-num {
+      font-size: clamp(10px, 1.4vw, 13px);
+      color: #AACEFF;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .game-title {
+      font-size: clamp(18px, 3vw, 26px);
+      color: #FFD700;
+      margin-bottom: 8px;
+    }
+    .game-desc {
+      font-size: clamp(11px, 1.6vw, 15px);
+      color: #ccd9ff;
+      line-height: 1.5;
+      font-family: 'Nunito', 'Arial', sans-serif;
+      font-weight: 600;
+    }
+    .game-tag {
+      display: inline-block;
+      margin-top: 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: clamp(10px, 1.3vw, 13px);
+      color: #AACEFF;
+      font-family: 'Arial', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Athar's Math Games</h1>
+  <p>Pick a game and play!</p>
+</header>
+
+<div class="games">
+
+  <a class="game-card" href="game1-number-clash.html">
+    <div class="game-card-img" style="background-image: url('assets/bg-city-arena.png')"></div>
+    <div class="game-card-body">
+      <div class="game-num">Game 1</div>
+      <div class="game-title">Number Clash</div>
+      <div class="game-desc">King Kong vs. Godzilla! Tap the bigger number to win each round, then face the King Cobra in a bonus battle.</div>
+      <span class="game-tag">Greater Than / Less Than</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="game2-megalodon.html">
+    <div class="game-card-img" style="background-image: url('assets/bg-ocean-arena.png')"></div>
+    <div class="game-card-body">
+      <div class="game-num">Game 2</div>
+      <div class="game-title">Megalodon Feeding Frenzy</div>
+      <div class="game-desc">Feed the Megalodon! Catch the right fish to practice math facts.</div>
+      <span class="game-tag">Addition &amp; Subtraction</span>
+    </div>
+  </a>
+
+</div>
+
+</body>
+</html>
