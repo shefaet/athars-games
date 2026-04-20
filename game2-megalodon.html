@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Megalodon Feeding Frenzy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frijole&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:  #FFD700;
+      --mega:  #00CCFF;
+      --dark:  #0a0a1a;
+      --coral: #FF6644;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--dark);
+      font-family: 'Frijole', 'Nunito', 'Comic Sans MS', 'Chalkboard SE', cursive;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===================== SCREENS ===================== */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen[hidden] { display: none; }
+
+    /* ===================== START SCREEN ===================== */
+    #start-screen {
+      background: radial-gradient(ellipse at 50% 65%, #002266 0%, #000d22 100%);
+      gap: 16px;
+    }
+
+    .title-wrap {
+      text-align: center;
+      line-height: 1.05;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.9);
+    }
+    .title-main { font-size: clamp(24px, 5vw, 56px); font-weight: 900; color: var(--mega); }
+    .title-sub  { font-size: clamp(13px, 2vw, 22px); color: #88CCFF; margin-top: 4px; }
+
+    .preview-mega {
+      height: clamp(90px, 18vh, 170px);
+      transform: scaleX(-1);          /* face right on start screen */
+      filter: drop-shadow(0 8px 24px rgba(0,180,255,0.55));
+    }
+
+    .level-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .level-label { font-size: clamp(13px, 1.8vw, 20px); color: #88CCFF; font-weight: 700; }
+    .level-row   { display: flex; gap: 12px; }
+
+    .level-btn {
+      width:  clamp(54px, 7vw, 72px);
+      height: clamp(54px, 7vw, 72px);
+      border-radius: 50%;
+      border: 3px solid #224466;
+      background: #0d1a33;
+      color: #88CCFF;
+      font-size: clamp(18px, 2.5vw, 28px);
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.18s;
+      position: relative;
+    }
+    .level-btn.active {
+      background: #0055AA;
+      border-color: var(--gold);
+      color: #fff;
+      transform: scale(1.12);
+      box-shadow: 0 0 18px rgba(255,215,0,0.45);
+    }
+    .level-btn.locked { opacity: 0.38; cursor: not-allowed; }
+    .level-btn .lock-icon { position: absolute; top: -6px; right: -6px; font-size: 14px; }
+
+    .level-desc {
+      font-size: clamp(12px, 1.6vw, 18px);
+      color: #6699CC;
+      text-align: center;
+      min-height: 1.4em;
+    }
+
+    .play-btn {
+      padding: clamp(12px, 1.8vw, 18px) clamp(36px, 6vw, 64px);
+      font-size: clamp(18px, 2.8vw, 30px);
+      font-family: inherit;
+      font-weight: 900;
+      background: linear-gradient(135deg, #0099FF, #0044CC);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(0,100,255,0.55);
+      transition: all 0.18s;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .play-btn:hover  { transform: scale(1.06) translateY(-3px); }
+    .play-btn:active { transform: scale(0.97); }
+
+    /* ===================== GAME SCREEN ===================== */
+    #game-screen {
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
+
+    #ocean-bg {
+      position: absolute; inset: 0;
+      background: url('assets/bg-ocean-underwater.png') center/cover no-repeat;
+    }
+    #ocean-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,10,30,0.42);
+    }
+
+    /* HUD */
+    #hud {
+      position: relative; z-index: 10;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(8px,1.2vh,14px) clamp(12px,2vw,24px);
+      background: rgba(0,5,20,0.90);
+      backdrop-filter: blur(6px);
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    #problem-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #problem-display {
+      font-size: clamp(22px, 4vw, 50px);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      white-space: nowrap;
+      letter-spacing: 2px;
+    }
+    #problem-display .answer-blank { color: var(--gold); }
+
+    .double-badge {
+      background: linear-gradient(135deg, #FF8800, #FF4400);
+      color: #fff;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: clamp(11px, 1.4vw, 16px);
+      font-weight: 900;
+      animation: pulse 0.75s ease-in-out infinite alternate;
+      white-space: nowrap;
+    }
+    @keyframes pulse {
+      from { transform: scale(1);    box-shadow: none; }
+      to   { transform: scale(1.07); box-shadow: 0 0 14px rgba(255,120,0,0.6); }
+    }
+
+    .hud-right {
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 1.5vw, 18px);
+    }
+    #fish-counter {
+      font-size: clamp(14px, 2vw, 22px);
+      color: #88DDFF;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    #score-display {
+      font-size: clamp(16px, 2.4vw, 28px);
+      color: var(--gold);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .help-btn {
+      width:  clamp(38px, 5vw, 52px);
+      height: clamp(38px, 5vw, 52px);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.14);
+      border: 2px solid rgba(255,255,255,0.35);
+      color: #fff;
+      font-size: clamp(18px, 2.5vw, 26px);
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .help-btn:hover  { background: rgba(255,255,255,0.28); transform: scale(1.1); }
+    .help-btn:active { transform: scale(0.95); }
+
+    /* Ocean play area */
+    #ocean-area {
+      position: relative; z-index: 5;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;   /* clips fish as they enter/exit */
+    }
+
+    /* Megalodon — left side, face right via scaleX(-1) */
+    #mega-wrap {
+      position: absolute;
+      left: clamp(8px, 1.5vw, 22px);
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 8;
+    }
+    #mega-img {
+      height: clamp(90px, 20vh, 190px);
+      transform: scaleX(-1);
+      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.65));
+      transition: filter 0.2s;
+    }
+    @keyframes megaChomp {
+      0%   { transform: scaleX(-1) scale(1); }
+      30%  { transform: scaleX(-1) scale(1.12); }
+      60%  { transform: scaleX(-1) scale(1.06); }
+      100% { transform: scaleX(-1) scale(1); }
+    }
+    .mega-chomp { animation: megaChomp 0.5s ease-out; }
+
+    /* Fish lane */
+    #fish-lane {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+    }
+
+    /* Outer fish wrapper — carries the swim translateX animation */
+    .fish-el {
+      position: absolute;
+      left: 0;
+      cursor: pointer;
+    }
+
+    /* Inner fish — image + label, handles the wiggle rotation */
+    .fish-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transform-origin: center bottom;
+    }
+    .fish-inner img {
+      height: clamp(48px, 9vh, 88px);
+      transform: scaleX(-1);          /* fish face left, swimming toward mega */
+      pointer-events: none;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+    }
+    .fish-label {
+      background: rgba(255,255,255,0.93);
+      color: #1a1a2e;
+      font-size: clamp(18px, 3.2vw, 38px);
+      font-weight: 900;
+      border-radius: 10px;
+      padding: 2px 12px;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      line-height: 1.2;
+    }
+    .fish-label.gold { background: rgba(255,215,0,0.95); }
+
+    /* Fish animations */
+    @keyframes swimLeft {
+      from { transform: translateX(110vw); }
+      to   { transform: translateX(-220px); }
+    }
+    @keyframes fishWiggle {
+      0%,100% { transform: rotate(0deg) scale(1); }
+      20%     { transform: rotate(-14deg) scale(1.1); }
+      40%     { transform: rotate(14deg) scale(1.1); }
+      60%     { transform: rotate(-9deg) scale(1); }
+      80%     { transform: rotate(9deg) scale(1); }
+    }
+    .fish-inner.wiggle { animation: fishWiggle 0.5s ease-in-out; }
+
+    /* Dot array panel (bottom-right, Levels 1–2) */
+    #dot-panel {
+      position: absolute;
+      right: clamp(10px, 2vw, 22px);
+      bottom: clamp(56px, 10vh, 88px);
+      z-index: 9;
+      background: rgba(0,10,30,0.90);
+      border: 2px solid rgba(0,200,255,0.35);
+      border-radius: 14px;
+      padding: clamp(8px,1.2vh,14px) clamp(12px,1.8vw,20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 72px;
+      backdrop-filter: blur(4px);
+    }
+    #dot-panel.hidden { display: none; }
+    .dot-panel-label {
+      font-size: clamp(10px, 1.2vw, 14px);
+      color: #88CCFF;
+      font-weight: 700;
+      text-align: center;
+    }
+    .dot-array {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(2px, 0.4vw, 4px);
+      align-items: center;
+    }
+    .dot-row { display: flex; gap: clamp(2px, 0.4vw, 4px); }
+    .dot {
+      width:  clamp(7px, 1.1vw, 13px);
+      height: clamp(7px, 1.1vw, 13px);
+      border-radius: 50%;
+      background: #3388FF;
+    }
+    .dot.spacer { background: transparent; }
+
+    /* Hint bar */
+    #hint-bar {
+      position: absolute;
+      bottom: clamp(10px, 2vh, 22px);
+      left: 50%; transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(0,5,20,0.92);
+      border: 2px solid rgba(0,200,255,0.3);
+      border-radius: 16px;
+      padding: clamp(8px,1.2vh,14px) clamp(16px,2.5vw,28px);
+      color: #fff;
+      font-size: clamp(13px, 1.9vw, 22px);
+      font-weight: 700;
+      text-align: center;
+      max-width: 84%;
+      backdrop-filter: blur(6px);
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    #hint-bar.hidden { opacity: 0; }
+
+    /* DOUBLE CHOMP flash */
+    #double-chomp-flash {
+      position: absolute;
+      inset: 0;
+      z-index: 14;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    #double-chomp-flash.show { opacity: 1; }
+    .chomp-text {
+      font-size: clamp(32px, 7vw, 80px);
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(255,180,0,0.9), 0 4px 16px rgba(0,0,0,0.8);
+      animation: chompPop 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes chompPop {
+      0%   { transform: scale(0.4); opacity: 0; }
+      60%  { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+
+    /* ===================== RESULT SCREEN ===================== */
+    #result-screen { background: rgba(0,5,20,0.97); }
+
+    .result-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(12px,2vh,22px);
+      max-width: 600px;
+      padding: clamp(20px,3vw,40px);
+    }
+    .result-title {
+      font-size: clamp(24px, 4.5vw, 52px);
+      font-weight: 900;
+      text-align: center;
+      color: var(--mega);
+      text-shadow: 0 4px 14px rgba(0,0,0,0.7);
+    }
+    .result-mega-img {
+      height: clamp(100px, 20vh, 200px);
+      transform: scaleX(-1);
+      filter: drop-shadow(0 8px 24px rgba(0,180,255,0.5));
+    }
+    .result-score {
+      font-size: clamp(28px, 5vw, 60px);
+      font-weight: 900;
+      color: var(--gold);
+    }
+    .result-stars-row { font-size: clamp(28px, 5vw, 60px); letter-spacing: 4px; }
+    .result-msg {
+      font-size: clamp(14px, 2vw, 23px);
+      color: #88CCFF;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .unlock-msg {
+      background: linear-gradient(135deg, var(--gold), #FF8800);
+      color: #1a1a2e;
+      padding: 8px 22px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: clamp(13px, 1.8vw, 20px);
+      text-align: center;
+    }
+    .result-btns {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: clamp(10px,1.5vw,16px) clamp(24px,4vw,48px);
+      font-size: clamp(15px, 2vw, 22px);
+      font-family: inherit;
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn:hover  { transform: scale(1.06) translateY(-2px); }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary   { background: linear-gradient(135deg, #0099FF, #0044CC); color: #fff; box-shadow: 0 6px 20px rgba(0,80,255,0.45); }
+    .btn-secondary { background: rgba(255,255,255,0.13); color: #fff; border: 2px solid rgba(255,255,255,0.3); }
+
+    /* ===================== CONFETTI ===================== */
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      pointer-events: none;
+      z-index: 20;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg);       opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== START SCREEN ==================== -->
+<div id="start-screen" class="screen">
+  <div class="title-wrap">
+    <div class="title-main">🦈 MEGALODON</div>
+    <div class="title-main">FEEDING FRENZY</div>
+    <div class="title-sub">Addition Facts — Feed the Mega!</div>
+  </div>
+
+  <img class="preview-mega" src="assets/megalodon-swim.png" alt="Megalodon">
+
+  <div class="level-section">
+    <div class="level-label">Choose Your Level:</div>
+    <div class="level-row" id="level-row">
+      <button class="level-btn active" data-level="1" onclick="selectLevel(1)">1</button>
+      <button class="level-btn locked" data-level="2" onclick="selectLevel(2)">2<span class="lock-icon">🔒</span></button>
+      <button class="level-btn locked" data-level="3" onclick="selectLevel(3)">3<span class="lock-icon">🔒</span></button>
+    </div>
+    <div class="level-desc" id="level-desc">+1, +2, +3 · Dot arrays shown · Slow fish</div>
+  </div>
+
+  <button class="play-btn" onclick="startGame()">🦈 FEED!</button>
+</div>
+
+<!-- ==================== GAME SCREEN ==================== -->
+<div id="game-screen" class="screen" hidden>
+  <div id="ocean-bg"></div>
+  <div id="ocean-overlay"></div>
+
+  <div id="hud">
+    <div id="problem-box">
+      <span id="problem-display">? + ? = <span class="answer-blank">?</span></span>
+      <span id="double-badge" class="double-badge" hidden>DOUBLES!</span>
+    </div>
+    <div class="hud-right">
+      <span id="fish-counter">🐟 0 / 10</span>
+      <span id="score-display">0 pts</span>
+      <button class="help-btn" onclick="onHelpBtn()">?</button>
+    </div>
+  </div>
+
+  <div id="ocean-area">
+    <div id="mega-wrap">
+      <img src="assets/megalodon-swim.png" id="mega-img" alt="Megalodon">
+    </div>
+
+    <div id="fish-lane"></div>
+
+    <div id="dot-panel" class="hidden">
+      <div class="dot-panel-label" id="dot-panel-label">answer</div>
+      <div class="dot-array" id="answer-dots"></div>
+    </div>
+
+    <div id="double-chomp-flash">
+      <div class="chomp-text">DOUBLE CHOMP! 🦈</div>
+    </div>
+
+    <div id="hint-bar" class="hidden">Find the fish with the right answer!</div>
+  </div>
+</div>
+
+<!-- ==================== RESULT SCREEN ==================== -->
+<div id="result-screen" class="screen" hidden>
+  <div class="result-content">
+    <div class="result-title"    id="result-title">Amazing Work!</div>
+    <img class="result-mega-img" id="result-mega-img" src="assets/megalodon-swim.png" alt="Megalodon">
+    <div class="result-score"    id="result-score">0 pts</div>
+    <div class="result-stars-row" id="result-stars">⭐⭐⭐</div>
+    <div class="result-msg"      id="result-msg"></div>
+    <div class="unlock-msg"      id="unlock-msg" hidden></div>
+    <div class="result-btns">
+      <button class="btn btn-primary"   onclick="startGame()">🦈 Play Again!</button>
+      <button class="btn btn-secondary" onclick="goHome()">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================= CONFIG =============================
+
+// Build a pool of addition problems for a given level.
+function makeProblemSet(level) {
+  const problems = [];
+  if (level === 1) {
+    // +1, +2, +3 only; sum <= 10
+    for (let a = 1; a <= 9; a++) {
+      for (let b = 1; b <= 3; b++) {
+        if (a + b <= 10) problems.push({ a, b, answer: a + b, isDouble: false });
+      }
+    }
+  } else if (level === 2) {
+    // All addition facts within 10
+    for (let a = 1; a <= 9; a++) {
+      for (let b = 1; b <= 9; b++) {
+        if (a + b <= 10) problems.push({ a, b, answer: a + b, isDouble: a === b });
+      }
+    }
+  } else {
+    // Level 3: all facts within 10, doubles appear twice as often
+    for (let a = 1; a <= 9; a++) {
+      for (let b = 1; b <= 9; b++) {
+        if (a + b <= 10) {
+          const isDouble = (a === b);
+          problems.push({ a, b, answer: a + b, isDouble });
+          if (isDouble) problems.push({ a, b, answer: a + b, isDouble });
+        }
+      }
+    }
+  }
+  return problems;
+}
+
+const LEVEL_CFG = {
+  1: {
+    label:       '+1, +2, +3  ·  Dot arrays shown  ·  Slow fish',
+    showDots:    true,
+    fishPerRound: 2,      // 1 correct + 1 distractor
+    speedMs:     26000,   // base crossing time (very slow — effectively no escape pressure)
+    problems:    makeProblemSet(1),
+  },
+  2: {
+    label:       'All facts within 10  ·  Dot arrays shown  ·  Medium fish',
+    showDots:    true,
+    fishPerRound: 3,
+    speedMs:     14000,
+    problems:    makeProblemSet(2),
+  },
+  3: {
+    label:       'Doubles facts!  ·  Dots hidden  ·  Fast fish',
+    showDots:    false,
+    fishPerRound: 3,
+    speedMs:     9000,
+    problems:    makeProblemSet(3),
+  },
+};
+
+// ============================= STATE =============================
+const G = {
+  level:          1,
+  fishShown:      0,
+  totalFish:      10,
+  score:          0,
+  firstTapCount:  0,   // fish caught correctly on very first tap
+  firstTap:       true,
+  wrongThisRound: 0,
+  currentProblem: null,
+  problemQueue:   [],
+  activeFishEls:  [],
+  interacting:    true,
+  hintTimer:      null,
+  level2Unlocked: localStorage.getItem('mff_level2') === '1',
+  level3Unlocked: localStorage.getItem('mff_level3') === '1',
+};
+
+// ============================= AUDIO =============================
+function mkAudio(src) {
+  const a = new Audio(src);
+  a.preload = 'auto';
+  return a;
+}
+const SFX = {
+  correct: mkAudio('assets/sfx-correct.mp3'),
+  wrong:   mkAudio('assets/sfx-wrong.mp3'),
+  chomp:   mkAudio('assets/sfx-chomp.mp3'),
+  victory: mkAudio('assets/sfx-victory.mp3'),
+  hint:    mkAudio('assets/sfx-hint.mp3'),
+};
+function play(name) {
+  const s = SFX[name];
+  if (!s) return;
+  s.currentTime = 0;
+  s.play().catch(() => {});
+}
+
+// ============================= DOTS ==============================
+function renderDots(n, container) {
+  container.innerHTML = '';
+  if (n <= 0 || n > 10) return;
+  const rows = Math.ceil(n / 5);
+  for (let r = 0; r < rows; r++) {
+    const row = document.createElement('div');
+    row.className = 'dot-row';
+    for (let d = 0; d < 5; d++) {
+      const dot = document.createElement('div');
+      dot.className = (d < n - r * 5) ? 'dot' : 'dot spacer';
+      row.appendChild(dot);
+    }
+    container.appendChild(row);
+  }
+}
+
+// ============================= SHUFFLE ===========================
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+// ============================= SCREENS ===========================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.hidden = true);
+  document.getElementById(id).hidden = false;
+}
+
+function goHome() {
+  clearAllFish();
+  clearTimeout(G.hintTimer);
+  showScreen('start-screen');
+  refreshStartScreen();
+}
+
+function refreshStartScreen() {
+  if (G.level2Unlocked) {
+    const b = document.querySelector('[data-level="2"]');
+    b.classList.remove('locked');
+    const lock = b.querySelector('.lock-icon');
+    if (lock) lock.hidden = true;
+  }
+  if (G.level3Unlocked) {
+    const b = document.querySelector('[data-level="3"]');
+    b.classList.remove('locked');
+    const lock = b.querySelector('.lock-icon');
+    if (lock) lock.hidden = true;
+  }
+}
+
+// ============================= LEVEL SELECT ======================
+function selectLevel(n) {
+  if (n === 2 && !G.level2Unlocked) return;
+  if (n === 3 && !G.level3Unlocked) return;
+  G.level = n;
+  document.querySelectorAll('.level-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.level === n);
+  });
+  document.getElementById('level-desc').textContent = LEVEL_CFG[n].label;
+}
+
+// ============================= MEGALODON =========================
+function setMega(state) {
+  const img = document.getElementById('mega-img');
+  const MAP = {
+    swim:  'assets/megalodon-swim.png',
+    chomp: 'assets/megalodon-chomp.png',
+    sad:   'assets/megalodon-sad.png',
+  };
+  img.src = MAP[state] || MAP.swim;
+  if (state === 'chomp') {
+    img.classList.remove('mega-chomp');
+    void img.offsetWidth;
+    img.classList.add('mega-chomp');
+    img.addEventListener('animationend', () => img.classList.remove('mega-chomp'), { once: true });
+  }
+}
+
+// ============================= HINT BAR ==========================
+function showHintBar(text, persistent) {
+  const bar = document.getElementById('hint-bar');
+  bar.textContent = text;
+  bar.classList.remove('hidden');
+  clearTimeout(G.hintTimer);
+  if (!persistent) {
+    G.hintTimer = setTimeout(() => bar.classList.add('hidden'), 2200);
+  }
+}
+function hideHintBar() {
+  clearTimeout(G.hintTimer);
+  document.getElementById('hint-bar').classList.add('hidden');
+}
+
+// ============================= HELP BUTTON =======================
+function onHelpBtn() {
+  G.firstTap = false;
+  const p = G.currentProblem;
+  if (!p) return;
+  play('hint');
+
+  // Reveal dot panel even on level 3
+  const panel = document.getElementById('dot-panel');
+  panel.classList.remove('hidden');
+  document.getElementById('dot-panel-label').textContent = `= ${p.answer}`;
+  renderDots(p.answer, document.getElementById('answer-dots'));
+
+  if (G.wrongThisRound >= 1) {
+    showHintBar(`💡 ${p.a} + ${p.b} = ${p.answer} — tap that fish! 🎯`, true);
+  } else {
+    showHintBar(`💡 Count the dots — find the fish showing ${p.answer}!`, true);
+  }
+}
+
+// ============================= HUD ===============================
+function updateHUD() {
+  document.getElementById('fish-counter').textContent  = `🐟 ${G.fishShown} / ${G.totalFish}`;
+  document.getElementById('score-display').textContent = `${G.score} pts`;
+}
+
+function updateProblemDisplay() {
+  const p = G.currentProblem;
+  document.getElementById('problem-display').innerHTML =
+    `${p.a} + ${p.b} = <span class="answer-blank">?</span>`;
+  document.getElementById('double-badge').hidden = !p.isDouble;
+
+  const cfg = LEVEL_CFG[G.level];
+  if (cfg.showDots) {
+    document.getElementById('dot-panel-label').textContent = `= ${p.answer}`;
+    renderDots(p.answer, document.getElementById('answer-dots'));
+    document.getElementById('dot-panel').classList.remove('hidden');
+  } else {
+    document.getElementById('dot-panel').classList.add('hidden');
+  }
+}
+
+// ============================= FISH MANAGEMENT ===================
+function clearAllFish() {
+  document.getElementById('fish-lane').innerHTML = '';
+  G.activeFishEls = [];
+}
+
+// Distractor answers: wrong-but-close (off by 1 or 2), within 1–10
+function makeDistractors(answer, count) {
+  const candidates = [];
+  for (const delta of [-2, -1, 1, 2, -3, 3]) {
+    const d = answer + delta;
+    if (d >= 1 && d <= 10 && !candidates.includes(d)) candidates.push(d);
+  }
+  shuffle(candidates);
+  const result = candidates.slice(0, count);
+  // Fall back to random if we somehow don't have enough
+  while (result.length < count) {
+    let d;
+    do { d = Math.floor(Math.random() * 10) + 1; }
+    while (d === answer || result.includes(d));
+    result.push(d);
+  }
+  return result;
+}
+
+// Vertical positions (% of ocean area height) for 2 or 3 fish
+function getYPositions(count) {
+  const base = count === 2 ? [28, 60] : [18, 50, 75];
+  return base.map(y => y + (Math.random() * 8 - 4)); // ±4% jitter
+}
+
+function createFishEl(fishValue, isCorrect, isBonus, yPct, speedMs) {
+  const outer = document.createElement('div');
+  outer.className = 'fish-el';
+  // Speed variation ±18% so fish don't all arrive at the same moment
+  const actualSpeed = speedMs * (0.82 + Math.random() * 0.36);
+  outer.style.cssText = `top: ${yPct}%; animation: swimLeft ${actualSpeed}ms linear forwards;`;
+  outer.dataset.isCorrect = isCorrect ? '1' : '0';
+
+  const inner = document.createElement('div');
+  inner.className = 'fish-inner';
+
+  const img = document.createElement('img');
+  img.src = isBonus ? 'assets/fish-gold.png' : 'assets/fish-regular.png';
+  img.alt = '';
+
+  const label = document.createElement('div');
+  label.className = isBonus ? 'fish-label gold' : 'fish-label';
+  label.textContent = fishValue;
+
+  inner.appendChild(img);
+  inner.appendChild(label);
+  outer.appendChild(inner);
+
+  // Tap (click + touchstart)
+  const onTap = (e) => {
+    e.stopPropagation();
+    onFishTap(outer, inner, fishValue, isCorrect, isBonus);
+  };
+  outer.addEventListener('click', onTap);
+  outer.addEventListener('touchstart', (e) => { e.preventDefault(); onTap(e); }, { passive: false });
+
+  // Escape: animation ends = fish crossed off the left edge
+  outer.addEventListener('animationend', () => onFishAnimEnd(outer, isCorrect));
+
+  return outer;
+}
+
+// ============================= SPAWN ROUND =======================
+function spawnFishRound() {
+  clearAllFish();
+
+  const cfg = LEVEL_CFG[G.level];
+  const p   = G.currentProblem;
+
+  const distractors = makeDistractors(p.answer, cfg.fishPerRound - 1);
+  const yPositions  = getYPositions(cfg.fishPerRound);
+
+  // Build fish list: 1 correct + N distractors, then shuffle order
+  const fishList = [
+    { value: p.answer, isCorrect: true,  isBonus: p.isBonus },
+    ...distractors.map(d => ({ value: d, isCorrect: false, isBonus: false })),
+  ];
+  shuffle(fishList);
+
+  const lane = document.getElementById('fish-lane');
+  fishList.forEach((fish, i) => {
+    const el = createFishEl(fish.value, fish.isCorrect, fish.isBonus, yPositions[i], cfg.speedMs);
+    lane.appendChild(el);
+    G.activeFishEls.push(el);
+  });
+}
+
+// ============================= ANIMATION END =====================
+function onFishAnimEnd(el, isCorrect) {
+  if (el.dataset.handled === '1') return;
+
+  if (!isCorrect) {
+    // Distractor swam off — just remove it
+    el.dataset.handled = '1';
+    el.remove();
+    G.activeFishEls = G.activeFishEls.filter(f => f !== el);
+    return;
+  }
+
+  // Correct fish escaped!
+  el.dataset.handled = '1';
+  G.interacting = false;
+
+  // Mark all remaining fish as handled before clearing
+  G.activeFishEls.forEach(f => { f.dataset.handled = '1'; });
+  clearAllFish();
+
+  play('wrong');
+  setMega('sad');
+  showHintBar('The fish got away! Try the next one! 🐟', false);
+
+  setTimeout(() => {
+    setMega('swim');
+    hideHintBar();
+    nextFish();
+  }, 1900);
+}
+
+// ============================= TAP HANDLERS ======================
+function onFishTap(el, inner, value, isCorrect, isBonus) {
+  if (!G.interacting) return;
+  if (el.dataset.handled === '1') return;
+
+  if (isCorrect) {
+    handleCorrectFish(el, isBonus);
+  } else {
+    handleWrongFish(inner);
+  }
+}
+
+function handleCorrectFish(el, isBonus) {
+  el.dataset.handled = '1';
+  G.interacting = false;
+
+  if (G.firstTap) G.firstTapCount++;
+
+  const p            = G.currentProblem;
+  const basePoints   = isBonus ? 20 : 10;
+  const doubleBonus  = p.isDouble ? 5 : 0;
+  G.score           += basePoints + doubleBonus;
+  updateHUD();
+
+  // Mark all fish handled, clear lane
+  G.activeFishEls.forEach(f => { f.dataset.handled = '1'; });
+  clearAllFish();
+
+  play('chomp');
+  setTimeout(() => play('correct'), 120);
+  setMega('chomp');
+
+  // DOUBLE CHOMP flash
+  if (p.isDouble) {
+    const flash = document.getElementById('double-chomp-flash');
+    flash.classList.add('show');
+    setTimeout(() => flash.classList.remove('show'), 1050);
+  }
+
+  // Feedback hint
+  const parts = [];
+  if (isBonus)       parts.push(`BONUS FISH! +20 pts 🌟`);
+  else               parts.push(`Chomp! +${basePoints} pts`);
+  if (doubleBonus)   parts.push(`DOUBLE CHOMP +${doubleBonus} 🦈`);
+  showHintBar(parts.join('  ·  '), false);
+
+  setTimeout(() => {
+    setMega('swim');
+    hideHintBar();
+    nextFish();
+  }, 1700);
+}
+
+function handleWrongFish(inner) {
+  // Don't block interacting — player should retry immediately
+  G.firstTap = false;
+  G.wrongThisRound++;
+
+  play('wrong');
+
+  // Wiggle the wrong fish
+  inner.classList.remove('wiggle');
+  void inner.offsetWidth;
+  inner.classList.add('wiggle');
+  inner.addEventListener('animationend', () => inner.classList.remove('wiggle'), { once: true });
+
+  // Megalodon briefly reacts
+  setMega('sad');
+  setTimeout(() => setMega('swim'), 700);
+
+  // Progressive hints
+  const p = G.currentProblem;
+  if (G.wrongThisRound >= 2) {
+    // Reveal the answer directly
+    showHintBar(`${p.a} + ${p.b} = ${p.answer} — tap that fish! 🎯`, true);
+    // Also show dots if hidden
+    const panel = document.getElementById('dot-panel');
+    panel.classList.remove('hidden');
+    document.getElementById('dot-panel-label').textContent = `= ${p.answer}`;
+    renderDots(p.answer, document.getElementById('answer-dots'));
+  } else {
+    showHintBar(`Hmm! ${p.a} + ${p.b} = ? Find the right number! 💪`, true);
+  }
+}
+
+// ============================= GAME FLOW =========================
+function startGame() {
+  G.fishShown      = 0;
+  G.score          = 0;
+  G.firstTapCount  = 0;
+  G.firstTap       = true;
+  G.wrongThisRound = 0;
+  G.interacting    = true;
+  G.currentProblem = null;
+  G.activeFishEls  = [];
+
+  // Fresh shuffled problem queue
+  const pool = [...LEVEL_CFG[G.level].problems];
+  shuffle(pool);
+  G.problemQueue = pool;
+
+  clearAllFish();
+  hideHintBar();
+  setMega('swim');
+  updateHUD();
+
+  // Dot panel visibility
+  const dotPanel = document.getElementById('dot-panel');
+  if (LEVEL_CFG[G.level].showDots) {
+    dotPanel.classList.remove('hidden');
+  } else {
+    dotPanel.classList.add('hidden');
+  }
+
+  showScreen('game-screen');
+  showHintBar('Tap the fish with the right answer! 🐟', false);
+  setTimeout(nextFish, 900);
+}
+
+function nextFish() {
+  if (G.fishShown >= G.totalFish) {
+    endGame();
+    return;
+  }
+
+  G.fishShown++;
+  G.firstTap       = true;
+  G.wrongThisRound = 0;
+  G.interacting    = true;
+  updateHUD();
+
+  // Refill queue if exhausted
+  if (G.problemQueue.length === 0) {
+    const pool = [...LEVEL_CFG[G.level].problems];
+    shuffle(pool);
+    G.problemQueue = pool;
+  }
+
+  const raw = G.problemQueue.pop();
+  // 20% chance of bonus gold fish
+  G.currentProblem = { ...raw, isBonus: Math.random() < 0.2 };
+
+  updateProblemDisplay();
+  spawnFishRound();
+}
+
+// ============================= STAR COUNT ========================
+function starCount() {
+  const pct = G.firstTapCount / G.totalFish;
+  if (pct >= 0.8) return 3;
+  if (pct >= 0.5) return 2;
+  if (pct >= 0.2) return 1;
+  return 0;
+}
+
+// ============================= END GAME ==========================
+function endGame() {
+  clearAllFish();
+  hideHintBar();
+
+  const stars = starCount();
+
+  // Level unlocks: completing level N unlocks level N+1
+  let newUnlock = 0;
+  if (G.level === 1 && !G.level2Unlocked) {
+    G.level2Unlocked = true;
+    localStorage.setItem('mff_level2', '1');
+    newUnlock = 2;
+  } else if (G.level === 2 && !G.level3Unlocked) {
+    G.level3Unlocked = true;
+    localStorage.setItem('mff_level3', '1');
+    newUnlock = 3;
+  }
+
+  setTimeout(() => play('victory'), 300);
+
+  const titles = ['Mega Feast! 🦈', 'Fish Frenzy! 🎉', 'Amazing Work! 💪', 'Incredible! 🌟'];
+  const title  = stars === 3
+    ? 'PERFECT FEEDING! 🔥'
+    : titles[Math.floor(Math.random() * titles.length)];
+
+  let starStr = '';
+  for (let i = 0; i < 3; i++) starStr += i < stars ? '⭐' : '☆';
+
+  const encouragements = [
+    'You worked SO hard today!',
+    'Your brain is getting stronger!',
+    'Keep practicing — you are amazing!',
+    'Every fish made you smarter!',
+  ];
+  const enc = encouragements[Math.floor(Math.random() * encouragements.length)];
+  const msg = `${G.firstTapCount} out of ${G.totalFish} on your first tap!  ${enc}`;
+
+  document.getElementById('result-title').textContent    = title;
+  document.getElementById('result-mega-img').src         = stars >= 2
+    ? 'assets/megalodon-chomp.png'
+    : 'assets/megalodon-sad.png';
+  document.getElementById('result-score').textContent    = `${G.score} pts`;
+  document.getElementById('result-stars').textContent    = starStr;
+  document.getElementById('result-msg').textContent      = msg;
+
+  const unlockEl = document.getElementById('unlock-msg');
+  if (newUnlock) {
+    unlockEl.textContent = newUnlock === 2
+      ? '🔓 Level 2 unlocked! All addition facts!'
+      : '🔓 Level 3 unlocked! Doubles facts — DOUBLE CHOMP!';
+    unlockEl.hidden = false;
+  } else {
+    unlockEl.hidden = true;
+  }
+
+  showScreen('result-screen');
+  if (stars === 3) showConfetti();
+}
+
+// ============================= CONFETTI ==========================
+function showConfetti() {
+  const container = document.getElementById('result-screen');
+  const colors = ['#FFD700','#00CCFF','#FF6644','#44FFCC','#FF44AA','#88FFFF','#FF9900'];
+  for (let i = 0; i < 52; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[i % colors.length]};
+      animation-delay: ${(Math.random() * 1.5).toFixed(2)}s;
+      animation-duration: ${(1.4 + Math.random() * 0.9).toFixed(2)}s;
+      width: ${6 + Math.floor(Math.random() * 8)}px;
+      height: ${6 + Math.floor(Math.random() * 8)}px;
+      border-radius: ${Math.random() < 0.4 ? '50%' : '3px'};
+    `;
+    container.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+// ============================= INIT ==============================
+selectLevel(1);
+refreshStartScreen();
+showScreen('start-screen');
+</script>
+</body>
+</html>
