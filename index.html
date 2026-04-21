@@ -99,6 +99,145 @@
       font-weight: 700;
       letter-spacing: 1px;
     }
+
+    /* ── Spinner section ── */
+    .spinner-section {
+      text-align: center;
+      padding: 16px 24px 40px;
+    }
+    .spinner-section h2 {
+      font-size: clamp(16px, 3vw, 26px);
+      color: #AACEFF;
+      margin-bottom: 24px;
+    }
+
+    .wheel-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    #wheelCanvas {
+      display: block;
+      border-radius: 50%;
+      box-shadow: 0 0 40px rgba(255,215,0,0.25);
+    }
+    .wheel-pointer {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 32px;
+      line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      pointer-events: none;
+    }
+
+    .spin-btn {
+      display: block;
+      margin: 28px auto 0;
+      padding: 16px 56px;
+      font-family: 'Frijole', cursive;
+      font-size: clamp(20px, 4vw, 30px);
+      color: #0a0a1e;
+      background: linear-gradient(135deg, #FFD700, #FF8C00);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(255,140,0,0.5);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .spin-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 8px 32px rgba(255,140,0,0.7);
+    }
+    .spin-btn:active:not(:disabled) { transform: scale(0.97); }
+    .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Result overlay ── */
+    .result-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+    }
+    .result-overlay.hidden { display: none; }
+
+    .result-card {
+      background: #13133a;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      overflow: hidden;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .result-img {
+      width: 100%;
+      height: 160px;
+      background-size: cover;
+      background-position: center;
+    }
+    .result-body { padding: 24px; }
+    .result-label {
+      font-size: 13px;
+      color: #AACEFF;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .result-title {
+      font-size: clamp(22px, 5vw, 32px);
+      color: #FFD700;
+      margin: 8px 0 24px;
+      line-height: 1.2;
+    }
+    .result-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .launch-btn {
+      padding: 12px 32px;
+      font-family: 'Frijole', cursive;
+      font-size: clamp(16px, 3vw, 20px);
+      color: #0a0a1e;
+      background: linear-gradient(135deg, #FFD700, #FF8C00);
+      border: none;
+      border-radius: 50px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(255,140,0,0.45);
+      transition: transform 0.1s;
+    }
+    .launch-btn:hover { transform: scale(1.04); }
+    .spin-again-btn {
+      padding: 12px 32px;
+      font-family: 'Frijole', cursive;
+      font-size: clamp(16px, 3vw, 20px);
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .spin-again-btn:hover { background: rgba(255,255,255,0.18); }
+
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 2px;
+      margin: 0 auto 40px;
+    }
   </style>
 </head>
 <body>
@@ -107,6 +246,33 @@
   <h1>Athar's Games</h1>
   <p>Pick a game and play!</p>
 </header>
+
+<!-- Spinner -->
+<div class="spinner-section">
+  <h2>Can't decide? Spin the wheel!</h2>
+  <div class="wheel-wrap">
+    <div class="wheel-pointer">▼</div>
+    <canvas id="wheelCanvas" width="320" height="320"></canvas>
+  </div>
+  <button class="spin-btn" id="spinBtn">SPIN!</button>
+</div>
+
+<!-- Result overlay -->
+<div class="result-overlay hidden" id="resultOverlay">
+  <div class="result-card">
+    <div class="result-img" id="resultImg"></div>
+    <div class="result-body">
+      <div class="result-label">Your game is...</div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-btns">
+        <a class="launch-btn" id="launchBtn">Launch Game!</a>
+        <button class="spin-again-btn" id="spinAgainBtn">Spin Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
 
 <div class="games">
 
@@ -130,7 +296,180 @@
     </div>
   </a>
 
+  <a class="game-card" href="game3-jungle-hop.html">
+    <div class="game-card-img" style="background-image: url('assets/bg-jungle-arena.png')"></div>
+    <div class="game-card-body">
+      <div class="game-num">Game 3</div>
+      <div class="game-title">The Great Banana Heist</div>
+      <div class="game-desc">King Kong stole the bananas! Count on to hop across the right jungle trees and race Kong to get them back.</div>
+      <span class="game-tag">Counting On</span>
+    </div>
+  </a>
+
 </div>
 
+<script>
+  const GAMES = [
+    {
+      name: "Number Clash",
+      url: "game1-number-clash.html",
+      img: "assets/bg-city-arena.png",
+      colors: ["#E65C00", "#F9D423"],
+      textColor: "#fff"
+    },
+    {
+      name: "Megalodon Feeding Frenzy",
+      url: "game2-megalodon.html",
+      img: "assets/bg-ocean-arena.png",
+      colors: ["#1565C0", "#42A5F5"],
+      textColor: "#fff"
+    },
+    {
+      name: "Banana Heist",
+      url: "game3-jungle-hop.html",
+      img: "assets/bg-jungle-arena.png",
+      colors: ["#2E7D32", "#A5D6A7"],
+      textColor: "#fff"
+    }
+  ];
+
+  // Repeat games so the wheel has enough segments to look interesting
+  const SEGMENTS = [...GAMES, ...GAMES, ...GAMES, ...GAMES]; // 8 segments
+  const NUM_SEG = SEGMENTS.length;
+  const SEG_ANGLE = (2 * Math.PI) / NUM_SEG;
+
+  const canvas = document.getElementById("wheelCanvas");
+  const ctx = canvas.getContext("2d");
+  const spinBtn = document.getElementById("spinBtn");
+  const overlay = document.getElementById("resultOverlay");
+  const resultImg = document.getElementById("resultImg");
+  const resultTitle = document.getElementById("resultTitle");
+  const launchBtn = document.getElementById("launchBtn");
+  const spinAgainBtn = document.getElementById("spinAgainBtn");
+
+  let rotation = 0;
+  let spinning = false;
+
+  function drawWheel(rot) {
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+    const r = Math.min(cx, cy) - 4;
+    ctx.clearRect(0, 0, W, H);
+
+    SEGMENTS.forEach((seg, i) => {
+      const start = rot + i * SEG_ANGLE;
+      const end = start + SEG_ANGLE;
+      const mid = start + SEG_ANGLE / 2;
+
+      // Segment fill with gradient
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      grd.addColorStop(0, seg.colors[0]);
+      grd.addColorStop(1, seg.colors[1]);
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = grd;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Label (short name for space)
+      const label = seg.name.length > 14 ? seg.name.split(" ").slice(0, 2).join("\n") : seg.name;
+      const lines = label.split("\n");
+      const textR = r * 0.62;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(mid);
+      ctx.textAlign = "right";
+      ctx.fillStyle = seg.textColor;
+      ctx.font = `bold ${Math.round(r * 0.095)}px Arial, sans-serif`;
+      ctx.shadowColor = "rgba(0,0,0,0.6)";
+      ctx.shadowBlur = 4;
+      const lineH = r * 0.11;
+      lines.forEach((line, li) => {
+        const y = (li - (lines.length - 1) / 2) * lineH;
+        ctx.fillText(line, textR, y + 5);
+      });
+      ctx.restore();
+    });
+
+    // Center cap
+    const cap = ctx.createRadialGradient(cx, cy, 0, cx, cy, 22);
+    cap.addColorStop(0, "#FFD700");
+    cap.addColorStop(1, "#FF8C00");
+    ctx.beginPath();
+    ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
+    ctx.fillStyle = cap;
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  drawWheel(rotation);
+
+  spinBtn.addEventListener("click", startSpin);
+  spinAgainBtn.addEventListener("click", () => {
+    overlay.classList.add("hidden");
+    startSpin();
+  });
+
+  function startSpin() {
+    if (spinning) return;
+    spinning = true;
+    spinBtn.disabled = true;
+
+    // Pick random game
+    const gameIdx = Math.floor(Math.random() * GAMES.length);
+    // Find all segment indices that match this game
+    const matchingSegs = SEGMENTS
+      .map((s, i) => (s === GAMES[gameIdx] ? i : -1))
+      .filter(i => i >= 0);
+    const targetSeg = matchingSegs[Math.floor(Math.random() * matchingSegs.length)];
+
+    // Angle to place center of targetSeg at the pointer (top = -π/2)
+    let targetRot = -Math.PI / 2 - targetSeg * SEG_ANGLE - SEG_ANGLE / 2;
+    // Add a tiny random offset within the segment (looks more natural)
+    targetRot -= (Math.random() - 0.5) * SEG_ANGLE * 0.5;
+    // Ensure we spin at least 6 full rotations forward
+    const minSpin = 6 * 2 * Math.PI;
+    while (targetRot < rotation + minSpin) targetRot += 2 * Math.PI;
+
+    const startRot = rotation;
+    const duration = 4200;
+    const startTime = performance.now();
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      // Cubic ease-out
+      const eased = 1 - Math.pow(1 - t, 3);
+      rotation = startRot + (targetRot - startRot) * eased;
+      drawWheel(rotation);
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        rotation = targetRot;
+        spinning = false;
+        spinBtn.disabled = false;
+        showResult(GAMES[gameIdx]);
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  function showResult(game) {
+    resultImg.style.backgroundImage = `url('${game.img}')`;
+    resultTitle.textContent = game.name;
+    launchBtn.href = game.url;
+    overlay.classList.remove("hidden");
+  }
+</script>
 </body>
 </html>

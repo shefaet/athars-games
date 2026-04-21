@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>The Great Banana Heist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frijole&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET & ROOT ===== */
+    :root {
+      --gold:    #FFD700;
+      --green:   #44FF88;
+      --red:     #FF3333;
+      --dark:    #0d1a0d;
+      --jungle:  #1a3a1a;
+      --kong-clr: #FFDD44;
+      --chimp-clr: #FF9933;
+      --orang-clr: #FF6600;
+      --gorilla-clr: #888888;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--dark);
+      font-family: 'Frijole', 'Comic Sans MS', cursive;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===== SCREEN BASE ===== */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen[hidden] { display: none; }
+
+    /* ===== JUNGLE BG ===== */
+    .jungle-bg {
+      position: absolute; inset: 0;
+      background: url('assets/bg-jungle-arena.png') center/cover no-repeat;
+    }
+    .jungle-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.45);
+    }
+
+    /* ===== START SCREEN ===== */
+    #start-screen {
+      background: radial-gradient(ellipse at 50% 30%, #0d2a0d 0%, #050f05 100%);
+      gap: clamp(14px, 2.5vh, 28px);
+    }
+
+    .game-title {
+      text-align: center;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.9);
+    }
+    .title-main {
+      font-size: clamp(28px, 6vw, 64px);
+      color: var(--gold);
+      line-height: 1;
+    }
+    .title-sub {
+      font-size: clamp(14px, 2.4vw, 26px);
+      color: #88CC88;
+      margin-top: 4px;
+    }
+
+    .level-label {
+      font-size: clamp(13px, 1.8vw, 20px);
+      color: #AADDAA;
+      font-weight: 700;
+    }
+
+    .level-row {
+      display: flex;
+      gap: clamp(16px, 3.5vw, 48px);
+      align-items: flex-end;
+    }
+
+    .level-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .level-circle {
+      width:  clamp(80px, 13vw, 130px);
+      height: clamp(80px, 13vw, 130px);
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.18);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,30,0,0.7);
+      transition: all 0.18s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .level-circle img {
+      height: 90%;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+    }
+    .level-name {
+      font-size: clamp(11px, 1.5vw, 17px);
+      color: #AADDAA;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .level-range {
+      font-size: clamp(9px, 1.1vw, 13px);
+      color: rgba(255,255,255,0.45);
+    }
+
+    .level-btn.active .level-circle {
+      border-color: var(--gold);
+      box-shadow: 0 0 22px rgba(255,215,0,0.5), 0 4px 16px rgba(0,0,0,0.5);
+      transform: scale(1.1);
+      background: rgba(0,40,0,0.85);
+    }
+    .level-btn.active .level-name { color: var(--gold); }
+
+    .play-btn {
+      padding: clamp(12px, 1.8vw, 18px) clamp(40px, 7vw, 72px);
+      font-size: clamp(20px, 3vw, 34px);
+      font-family: inherit;
+      background: linear-gradient(135deg, #FF8800, #FF4400);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(255,80,0,0.55);
+      transition: all 0.18s;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    }
+    .play-btn:hover  { transform: scale(1.06) translateY(-3px); }
+    .play-btn:active { transform: scale(0.97); }
+
+    /* ===== GAME SCREEN ===== */
+    #game-screen { justify-content: flex-start; }
+
+    /* HUD */
+    #hud {
+      position: relative; z-index: 10;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(8px,1.2vh,14px) clamp(12px,2vw,24px);
+      background: rgba(0,10,0,0.88);
+      backdrop-filter: blur(6px);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    .hud-label {
+      font-size: clamp(12px, 1.8vw, 20px);
+      color: #fff;
+      white-space: nowrap;
+    }
+    .pips {
+      display: flex;
+      gap: clamp(4px, 0.8vw, 10px);
+    }
+    .pip {
+      width:  clamp(10px, 1.5vw, 18px);
+      height: clamp(10px, 1.5vw, 18px);
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+    .pip.done     { background: var(--gold);  border-color: var(--gold); box-shadow: 0 0 8px rgba(255,215,0,0.5); }
+    .pip.done.miss { background: #aaa;        border-color: #ccc; }
+
+    .miss-badge {
+      font-size: clamp(11px, 1.5vw, 17px);
+      color: #FF8888;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Game area */
+    #game-area {
+      position: relative; z-index: 5;
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(10px, 1.8vh, 20px) clamp(10px, 1.8vw, 20px);
+      overflow: visible;
+    }
+
+    /* Prompt */
+    #prompt-area {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: clamp(10px, 2vw, 24px);
+      width: 100%;
+      justify-content: center;
+    }
+    #ape-img {
+      height: clamp(90px, 18vh, 180px);
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.7));
+      flex-shrink: 0;
+    }
+    #prompt-text {
+      font-size: clamp(20px, 3.5vw, 42px);
+      color: #fff;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.9);
+      text-align: center;
+      line-height: 1.3;
+      background: rgba(0,0,0,0.6);
+      padding: clamp(8px, 1.5vh, 16px) clamp(16px, 2.5vw, 30px);
+      border-radius: 16px;
+      border: 2px solid rgba(255,215,0,0.35);
+    }
+    #prompt-text .hop-num {
+      color: var(--gold);
+    }
+
+    /* Tree row */
+    #tree-row-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    #tree-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: clamp(6px, 1.2vw, 16px);
+      width: 100%;
+    }
+
+    .tree-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.15s;
+      flex: 1;
+      min-width: 0;
+      border-radius: 12px;
+      padding: 4px 4px 0;
+      border: 3px solid transparent;
+      position: relative;
+    }
+    .tree-slot:not(.start-tree):hover  { transform: translateY(-8px) scale(1.08); }
+    .tree-slot:not(.start-tree):active { transform: scale(0.95); }
+    .tree-slot.start-tree {
+      cursor: default;
+      border-color: var(--gold);
+      background: rgba(255,215,0,0.1);
+      box-shadow: 0 0 18px rgba(255,215,0,0.4);
+    }
+
+    .tree-slot img.tree-img {
+      width: 100%;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+    }
+
+    .tree-ape {
+      position: absolute;
+      bottom: 85%;
+      left: 50%;
+      transform: translateX(-50%);
+      height: clamp(70px, 12vw, 120px);
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    @keyframes apeFall {
+      0%   { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; }
+      15%  { transform: translateX(-50%) translateY(10px) rotate(5deg); }
+      50%  { transform: translateX(-50%) translateY(120px) rotate(15deg); opacity: 0.2; }
+      70%  { transform: translateX(-50%) translateY(120px) rotate(10deg); opacity: 0.2; }
+      100% { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; }
+    }
+    .tree-ape.falling { animation: apeFall 0.9s ease-in-out; }
+
+    #flying-ape {
+      position: absolute;
+      height: clamp(70px, 12vw, 120px);
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+    }
+
+    /* "YOU" label shown on start tree, below the number */
+    .tree-you {
+      font-size: clamp(10px, 1.6vw, 18px);
+      color: var(--gold);
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px rgba(255,215,0,0.8);
+    }
+
+    .tree-num {
+      font-size: clamp(20px, 3.2vw, 38px);
+      color: #fff;
+      font-weight: 900;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.6);
+      border-radius: 8px;
+      padding: 2px 10px;
+      margin-top: 4px;
+    }
+    .tree-slot.start-tree .tree-num { color: var(--gold); }
+
+    /* Tree state flash animations — applied to the whole slot */
+    @keyframes slotWrong {
+      0%,100% { transform: translateX(0); background: rgba(255,50,50,0.0); }
+      20%     { transform: translateX(-10px); background: rgba(255,50,50,0.35); }
+      40%     { transform: translateX(10px); }
+      60%     { transform: translateX(-6px); }
+      80%     { transform: translateX(6px); }
+    }
+    .tree-slot.wrong-flash { animation: slotWrong 0.45s ease-in-out; }
+
+    @keyframes slotCorrect {
+      0%,100% { background: rgba(255,215,0,0.0); box-shadow: none; }
+      40%     { background: rgba(255,215,0,0.35); box-shadow: 0 0 30px rgba(255,215,0,0.8); }
+    }
+    .tree-slot.correct-flash { animation: slotCorrect 0.55s ease-in-out 2; }
+
+    /* Ape image shake on wrong (prompt area) */
+    @keyframes apeShake {
+      0%,100% { transform: translateX(0) rotate(0deg); }
+      20%     { transform: translateX(-8px) rotate(-5deg); }
+      40%     { transform: translateX(8px) rotate(5deg); }
+      60%     { transform: translateX(-5px) rotate(-3deg); }
+      80%     { transform: translateX(5px) rotate(3deg); }
+    }
+    #ape-img.shaking { animation: apeShake 0.45s ease-in-out; }
+
+    /* ===== HINT BAR ===== */
+    #hint-bar {
+      position: absolute;
+      bottom: clamp(8px, 1.5vh, 18px);
+      left: 50%; transform: translateX(-50%);
+      z-index: 15;
+      background: rgba(0,0,16,0.92);
+      border: 2px solid rgba(255,255,255,0.22);
+      border-radius: 16px;
+      padding: clamp(7px,1vh,13px) clamp(14px,2vw,26px);
+      color: #fff;
+      font-size: clamp(12px, 1.8vw, 20px);
+      text-align: center;
+      max-width: 85%;
+      backdrop-filter: blur(6px);
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    #hint-bar.hidden { opacity: 0; }
+
+    /* ===== L3 KEYPAD ===== */
+    #keypad-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(8px, 1.5vh, 18px);
+      z-index: 2;
+    }
+    #keypad-display {
+      font-size: clamp(36px, 7vw, 80px);
+      color: var(--gold);
+      text-shadow: 0 3px 12px rgba(0,0,0,0.8);
+      min-width: clamp(60px, 10vw, 120px);
+      text-align: center;
+      background: rgba(0,0,0,0.6);
+      border-radius: 12px;
+      padding: clamp(4px, 0.8vh, 10px) clamp(16px, 2.5vw, 30px);
+      border: 2px solid rgba(255,215,0,0.4);
+    }
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(6px, 1vw, 14px);
+    }
+    .key-btn {
+      width:  clamp(56px, 9vw, 100px);
+      height: clamp(56px, 9vw, 100px);
+      border-radius: clamp(10px, 1.5vw, 18px);
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.28);
+      color: #fff;
+      font-size: clamp(22px, 3.5vw, 40px);
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.14s;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .key-btn:hover  { background: rgba(255,255,255,0.24); transform: scale(1.08); }
+    .key-btn:active { transform: scale(0.93); }
+    .key-btn.key-del { background: rgba(255,80,0,0.25); border-color: rgba(255,80,0,0.5); font-size: clamp(16px, 2.5vw, 28px); }
+    .key-btn.key-zero { grid-column: 2; }
+
+    #jump-btn, #jump-btn-boss {
+      padding: clamp(10px, 1.5vh, 16px) clamp(30px, 5vw, 60px);
+      font-size: clamp(18px, 2.8vw, 32px);
+      font-family: inherit;
+      background: linear-gradient(135deg, #FF8800, #FF4400);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(255,80,0,0.5);
+      transition: all 0.16s;
+    }
+    #jump-btn:hover, #jump-btn-boss:hover   { transform: scale(1.07) translateY(-2px); }
+    #jump-btn:active, #jump-btn-boss:active { transform: scale(0.96); }
+
+    /* ===== BANANA SCREEN ===== */
+    #banana-screen {
+      background: radial-gradient(ellipse at 50% 40%, #3a2a00 0%, #1a1000 60%, #0a0800 100%);
+      gap: clamp(16px, 3vh, 32px);
+    }
+    #banana-stash-img {
+      height: clamp(140px, 28vh, 280px);
+      filter: drop-shadow(0 12px 30px rgba(255,215,0,0.5));
+      transform: translateY(-60px) scale(0.7);
+      opacity: 0;
+      transition: transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease;
+    }
+    #banana-stash-img.landed {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    .banana-title {
+      font-size: clamp(24px, 5vw, 56px);
+      color: var(--gold);
+      text-shadow: 0 4px 16px rgba(255,215,0,0.5);
+      text-align: center;
+    }
+    .banana-sub {
+      font-size: clamp(14px, 2.2vw, 24px);
+      color: #FFDD99;
+      text-align: center;
+    }
+
+    /* ===== BOSS CUTSCENE ===== */
+    #boss-cutscene {
+      background: radial-gradient(ellipse at 50% 80%, #2a1a00 0%, #0f0800 60%, #000 100%);
+      flex-direction: column;
+      justify-content: flex-end;
+      cursor: pointer;
+    }
+    #cutscene-kong-wrap {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+    #cutscene-kong-img {
+      height: clamp(260px, 55vh, 520px);
+      filter: drop-shadow(0 0 36px rgba(255,150,0,0.6)) drop-shadow(0 12px 28px rgba(0,0,0,0.9));
+      transform: translateX(120%) scale(0.85);
+      opacity: 0;
+      transition: transform 0.9s cubic-bezier(0.22,1,0.36,1), opacity 0.6s ease;
+      pointer-events: none;
+    }
+    #cutscene-kong-img.entered {
+      transform: translateX(0) scale(1);
+      opacity: 1;
+    }
+    #cutscene-dialogue {
+      width: 100%;
+      background: linear-gradient(0deg, rgba(0,0,0,0.96) 0%, rgba(15,8,0,0.9) 100%);
+      border-top: 2px solid rgba(255,140,0,0.4);
+      padding: clamp(14px,2.2vh,26px) clamp(18px,3.5vw,44px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(6px, 1vh, 12px);
+      flex-shrink: 0;
+    }
+    #cutscene-speaker {
+      font-size: clamp(11px, 1.5vw, 17px);
+      color: var(--kong-clr);
+      font-weight: 900;
+      letter-spacing: 2px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    #cutscene-speaker.visible { opacity: 1; }
+    #cutscene-text {
+      font-size: clamp(15px, 2.2vw, 26px);
+      color: #fff;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.3;
+    }
+    #cutscene-tap {
+      font-size: clamp(10px, 1.3vw, 15px);
+      color: rgba(255,180,80,0.7);
+      opacity: 0;
+      transition: opacity 0.5s;
+      animation: tapBlink 1.1s ease-in-out infinite alternate;
+    }
+    #cutscene-tap.visible { opacity: 1; }
+    @keyframes tapBlink { from { opacity: 0.4; } to { opacity: 1; } }
+
+    /* ===== END CUTSCENE ===== */
+    #end-cutscene {
+      background: radial-gradient(ellipse at 50% 80%, #2a1a00 0%, #0f0800 60%, #000 100%);
+      flex-direction: column;
+      justify-content: flex-end;
+      cursor: pointer;
+    }
+    #end-cutscene-kong-wrap {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+    #end-cutscene-kong-img {
+      height: clamp(260px, 55vh, 520px);
+      filter: drop-shadow(0 0 36px rgba(255,150,0,0.6)) drop-shadow(0 12px 28px rgba(0,0,0,0.9));
+      transform: scale(0.5);
+      opacity: 0;
+      transition: transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease;
+      pointer-events: none;
+    }
+    #end-cutscene-kong-img.entered {
+      transform: scale(1);
+      opacity: 1;
+    }
+    #end-cutscene-dialogue {
+      width: 100%;
+      background: linear-gradient(0deg, rgba(0,0,0,0.96) 0%, rgba(15,8,0,0.9) 100%);
+      border-top: 2px solid rgba(255,140,0,0.4);
+      padding: clamp(14px,2.2vh,26px) clamp(18px,3.5vw,44px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(6px, 1vh, 12px);
+      flex-shrink: 0;
+    }
+    #end-cutscene-speaker {
+      font-size: clamp(11px, 1.5vw, 17px);
+      color: var(--kong-clr);
+      font-weight: 900;
+      letter-spacing: 2px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    #end-cutscene-speaker.visible { opacity: 1; }
+    #end-cutscene-text {
+      font-size: clamp(15px, 2.2vw, 26px);
+      color: #fff;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.3;
+    }
+    #end-cutscene-tap {
+      font-size: clamp(10px, 1.3vw, 15px);
+      color: rgba(255,180,80,0.7);
+      opacity: 0;
+      transition: opacity 0.5s;
+      animation: tapBlink 1.1s ease-in-out infinite alternate;
+    }
+    #end-cutscene-tap.visible { opacity: 1; }
+
+    /* ===== BOSS RACE SCREEN ===== */
+    #boss-screen { justify-content: flex-start; }
+
+    #boss-hud {
+      position: relative; z-index: 10;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(8px,1.2vh,14px) clamp(12px,2vw,24px);
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(6px);
+      flex-shrink: 0;
+    }
+    .boss-badge {
+      background: linear-gradient(135deg, #884400, #FF8800);
+      color: #fff;
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: clamp(12px, 1.8vw, 20px);
+      font-weight: 900;
+      animation: bossPulse 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes bossPulse {
+      from { transform: scale(1); box-shadow: none; }
+      to   { transform: scale(1.06); box-shadow: 0 0 16px rgba(255,140,0,0.6); }
+    }
+
+    #boss-area {
+      position: relative; z-index: 5;
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(6px, 1.2vh, 14px) clamp(10px, 1.8vw, 20px);
+      gap: clamp(4px, 0.8vh, 8px);
+      overflow: visible;
+    }
+
+    /* Boss row headers (KONG / YOU labels) */
+    .boss-row-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 4px;
+    }
+    .boss-row-tag {
+      font-size: clamp(10px, 1.3vw, 14px);
+      font-weight: 900;
+      padding: 2px 10px;
+      border-radius: 10px;
+      letter-spacing: 1px;
+    }
+    .kong-tag {
+      background: linear-gradient(135deg, #884400, #FF8800);
+      color: #fff;
+    }
+    .player-tag {
+      background: linear-gradient(135deg, #228822, #44CC44);
+      color: #fff;
+    }
+    .boss-row-pos {
+      font-size: clamp(10px, 1.3vw, 14px);
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* Boss tree row containers */
+    .boss-tree-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .boss-tree-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: clamp(3px, 0.7vw, 8px);
+      width: 100%;
+    }
+
+    /* Compact trees for boss mode */
+    .boss-tree-wrap .tree-slot {
+      padding: 2px 2px 0;
+      border-width: 2px;
+      border-radius: 8px;
+    }
+    .boss-tree-wrap .tree-img {
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    }
+    .boss-tree-wrap .tree-num {
+      font-size: clamp(12px, 1.8vw, 22px);
+      padding: 1px 6px;
+      margin-top: 2px;
+    }
+    .boss-tree-wrap .tree-ape {
+      height: clamp(50px, 9vw, 90px);
+    }
+    .boss-tree-wrap .tree-ape.kong-ape {
+      height: clamp(70px, 13vw, 130px);
+    }
+
+    /* Kong's start tree — orange instead of gold */
+    .kong-start-tree {
+      cursor: default;
+      border-color: var(--kong-clr) !important;
+      background: rgba(255,153,51,0.15) !important;
+      box-shadow: 0 0 12px rgba(255,153,51,0.4) !important;
+    }
+    .kong-start-tree .tree-num { color: var(--kong-clr) !important; }
+
+    /* Kong row is non-interactive */
+    #kong-tree-row-wrap .tree-slot {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* Boss middle section */
+    #boss-middle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(10px, 2vw, 24px);
+      padding: clamp(4px, 0.6vh, 8px) 0;
+    }
+    #boss-progress {
+      font-size: clamp(11px, 1.5vw, 16px);
+      color: var(--gold);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Boss question + keypad */
+    #boss-question {
+      font-size: clamp(18px, 3vw, 36px);
+      color: #fff;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.8);
+      text-align: center;
+      background: rgba(0,0,0,0.55);
+      padding: clamp(6px, 1vh, 12px) clamp(14px, 2.2vw, 28px);
+      border-radius: 14px;
+      border: 2px solid rgba(255,215,0,0.3);
+    }
+    #boss-question .hop-num { color: var(--gold); }
+
+    #boss-keypad-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(6px, 1.2vh, 14px);
+    }
+    #boss-keypad-display {
+      font-size: clamp(32px, 6vw, 70px);
+      color: var(--gold);
+      min-width: clamp(55px, 9vw, 110px);
+      text-align: center;
+      background: rgba(0,0,0,0.6);
+      border-radius: 12px;
+      padding: clamp(3px, 0.6vh, 8px) clamp(14px, 2.2vw, 26px);
+      border: 2px solid rgba(255,215,0,0.4);
+    }
+
+    /* ===== RESULT SCREEN ===== */
+    #result-screen { background: rgba(0,0,0,0.93); gap: clamp(12px,2vh,22px); }
+    .result-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(12px,2vh,22px);
+      max-width: 600px;
+      padding: clamp(20px,3vw,40px);
+    }
+    .result-title {
+      font-size: clamp(26px, 5vw, 58px);
+      color: var(--gold);
+      text-shadow: 0 4px 14px rgba(0,0,0,0.7);
+      text-align: center;
+    }
+    .result-img {
+      height: clamp(120px, 22vh, 220px);
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
+    }
+    .result-msg {
+      font-size: clamp(14px, 2vw, 24px);
+      color: #CCE8CC;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .result-btns {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: clamp(10px,1.5vw,16px) clamp(24px,4vw,48px);
+      font-size: clamp(15px, 2vw, 22px);
+      font-family: inherit;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn:hover  { transform: scale(1.06) translateY(-2px); }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary   { background: linear-gradient(135deg, #FF7700, #FF3300); color: #fff; box-shadow: 0 6px 20px rgba(255,60,0,0.45); }
+    .btn-secondary { background: rgba(255,255,255,0.12); color: #fff; border: 2px solid rgba(255,255,255,0.3); }
+
+    /* ===== CONFETTI ===== */
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      border-radius: 3px;
+      pointer-events: none;
+      z-index: 20;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg);       opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ===== SCREEN TRANSITION ===== */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+
+  </style>
+</head>
+<body>
+
+<!-- ==================== START SCREEN ==================== -->
+<div id="start-screen" class="screen">
+  <div class="game-title">
+    <div class="title-main">The Great</div>
+    <div class="title-main">Banana Heist</div>
+    <div class="title-sub">Count on to catch King Kong!</div>
+  </div>
+
+  <div class="level-label">Choose Your Ape</div>
+
+  <div class="level-row">
+    <div class="level-btn" data-level="1" onclick="selectLevel(1)">
+      <div class="level-circle">
+        <img src="assets/chimpanzee-idle.png" alt="Chimp">
+      </div>
+      <div class="level-name">CHIMP</div>
+      <div class="level-range">Count on 1–5</div>
+    </div>
+    <div class="level-btn" data-level="2" onclick="selectLevel(2)">
+      <div class="level-circle">
+        <img src="assets/orangutan-idle.png" alt="Orangutan">
+      </div>
+      <div class="level-name">ORANGUTAN</div>
+      <div class="level-range">Count on 1–9</div>
+    </div>
+    <div class="level-btn" data-level="3" onclick="selectLevel(3)">
+      <div class="level-circle">
+        <img src="assets/gorilla-idle.png" alt="Gorilla">
+      </div>
+      <div class="level-name">GORILLA</div>
+      <div class="level-range">Count on 1–9</div>
+    </div>
+  </div>
+
+  <button class="play-btn" onclick="startGame()">PLAY!</button>
+</div>
+
+<!-- ==================== GAME SCREEN ==================== -->
+<div id="game-screen" class="screen" hidden>
+  <div class="jungle-bg"></div>
+  <div class="jungle-overlay"></div>
+
+  <div id="hud">
+    <span class="hud-label">Round <span id="round-num">1</span>/5</span>
+    <div class="pips" id="pips"></div>
+    <span class="miss-badge" id="miss-badge">Misses: 0</span>
+  </div>
+
+  <div id="game-area">
+    <div id="prompt-area">
+      <img id="ape-img" src="assets/chimpanzee-idle.png" alt="Ape">
+      <div id="prompt-text">Count on <span class="hop-num" id="hop-display">?</span>!</div>
+    </div>
+
+    <!-- Tree row (L1 + L2) -->
+    <div id="tree-row-wrap">
+      <div id="tree-row"></div>
+    </div>
+
+    <!-- Flying ape for hop animation -->
+    <img id="flying-ape" src="" alt="">
+
+    <!-- L3 Keypad -->
+    <div id="keypad-wrap" style="display:none;">
+      <div id="keypad-display">?</div>
+      <div class="keypad-grid">
+        <button class="key-btn" onclick="keypadDigit('7')">7</button>
+        <button class="key-btn" onclick="keypadDigit('8')">8</button>
+        <button class="key-btn" onclick="keypadDigit('9')">9</button>
+        <button class="key-btn" onclick="keypadDigit('4')">4</button>
+        <button class="key-btn" onclick="keypadDigit('5')">5</button>
+        <button class="key-btn" onclick="keypadDigit('6')">6</button>
+        <button class="key-btn" onclick="keypadDigit('1')">1</button>
+        <button class="key-btn" onclick="keypadDigit('2')">2</button>
+        <button class="key-btn" onclick="keypadDigit('3')">3</button>
+        <button class="key-btn key-del" onclick="keypadDel()">⌫</button>
+        <button class="key-btn key-zero" onclick="keypadDigit('0')">0</button>
+      </div>
+      <button id="jump-btn" onclick="keypadSubmit()">JUMP! →</button>
+    </div>
+  </div>
+
+  <div id="hint-bar" class="hidden"></div>
+</div>
+
+<!-- ==================== BANANA SCREEN ==================== -->
+<div id="banana-screen" class="screen" hidden>
+  <img id="banana-stash-img" src="assets/banana-stash.png" alt="Banana Stash">
+  <div class="banana-title">You found the bananas!</div>
+  <div class="banana-sub" id="banana-sub">But King Kong is coming...</div>
+</div>
+
+<!-- ==================== BOSS CUTSCENE ==================== -->
+<div id="boss-cutscene" class="screen" hidden onclick="cutsceneAdvance()">
+  <div id="cutscene-kong-wrap">
+    <img src="assets/king-kong-attack.png" id="cutscene-kong-img" alt="King Kong">
+  </div>
+  <div id="cutscene-dialogue">
+    <div id="cutscene-speaker">KING KONG</div>
+    <div id="cutscene-text"></div>
+    <div id="cutscene-tap">TAP TO RACE ▶</div>
+  </div>
+</div>
+
+<!-- ==================== BOSS RACE SCREEN ==================== -->
+<div id="boss-screen" class="screen" hidden>
+  <div class="jungle-bg"></div>
+  <div class="jungle-overlay"></div>
+
+  <div id="boss-hud">
+    <div class="boss-badge">BOSS RACE!</div>
+  </div>
+
+  <div id="boss-area">
+    <!-- Kong's tree row (top) -->
+    <div class="boss-row-header">
+      <span class="boss-row-tag kong-tag">KONG</span>
+      <span class="boss-row-pos">Tree <span id="kong-pos-num">1</span></span>
+    </div>
+    <div id="kong-tree-row-wrap" class="boss-tree-wrap">
+      <div id="kong-tree-row" class="boss-tree-row"></div>
+    </div>
+
+    <!-- Middle: question + progress -->
+    <div id="boss-middle">
+      <div id="boss-progress">Race to tree <span id="boss-finish-num">10</span>!</div>
+      <div id="boss-question">Count on <span class="hop-num" id="boss-hop-display">?</span> from tree <span class="hop-num" id="boss-start-display">?</span>!</div>
+    </div>
+
+    <!-- Player's tree row (bottom) -->
+    <div class="boss-row-header">
+      <span class="boss-row-tag player-tag" id="boss-player-tag">YOU</span>
+      <span class="boss-row-pos">Tree <span id="player-pos-num">1</span></span>
+    </div>
+    <div id="boss-tree-row-wrap" class="boss-tree-wrap">
+      <div id="boss-tree-row" class="boss-tree-row"></div>
+    </div>
+
+    <!-- Flying ape for boss hop animation -->
+    <img id="boss-flying-ape" src="" alt="" style="position:absolute;display:none;pointer-events:none;z-index:10;height:clamp(50px,9vw,90px);filter:drop-shadow(0 4px 10px rgba(0,0,0,0.7));">
+
+    <!-- Boss keypad (L3 only) -->
+    <div id="boss-keypad-wrap" style="display:none;">
+      <div id="boss-keypad-display">?</div>
+      <div class="keypad-grid">
+        <button class="key-btn" onclick="bossKeypadDigit('7')">7</button>
+        <button class="key-btn" onclick="bossKeypadDigit('8')">8</button>
+        <button class="key-btn" onclick="bossKeypadDigit('9')">9</button>
+        <button class="key-btn" onclick="bossKeypadDigit('4')">4</button>
+        <button class="key-btn" onclick="bossKeypadDigit('5')">5</button>
+        <button class="key-btn" onclick="bossKeypadDigit('6')">6</button>
+        <button class="key-btn" onclick="bossKeypadDigit('1')">1</button>
+        <button class="key-btn" onclick="bossKeypadDigit('2')">2</button>
+        <button class="key-btn" onclick="bossKeypadDigit('3')">3</button>
+        <button class="key-btn key-del" onclick="bossKeypadDel()">⌫</button>
+        <button class="key-btn key-zero" onclick="bossKeypadDigit('0')">0</button>
+      </div>
+      <button id="jump-btn-boss" onclick="bossKeypadSubmit()">JUMP! →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== END CUTSCENE ==================== -->
+<div id="end-cutscene" class="screen" hidden onclick="endCutsceneAdvance()">
+  <div id="end-cutscene-kong-wrap">
+    <img src="assets/king-kong-idle.png" id="end-cutscene-kong-img" alt="King Kong">
+  </div>
+  <div id="end-cutscene-dialogue">
+    <div id="end-cutscene-speaker">KING KONG</div>
+    <div id="end-cutscene-text"></div>
+    <div id="end-cutscene-tap">TAP TO CONTINUE ▶</div>
+  </div>
+</div>
+
+<!-- ==================== RESULT SCREEN ==================== -->
+<div id="result-screen" class="screen" hidden>
+  <div class="result-content">
+    <div class="result-title" id="result-title">You got the bananas!</div>
+    <img class="result-img" id="result-img" src="" alt="">
+    <div class="result-msg" id="result-msg"></div>
+    <div class="result-btns">
+      <button class="btn btn-primary"   onclick="playAgain()">Play Again!</button>
+      <button class="btn btn-secondary" onclick="goHome()">Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================= STATE =============================
+const G = {
+  level:        1,
+  round:        0,
+  startTree:    0,
+  viewStart:    1,
+  hopCount:     0,
+  targetTree:   0,
+  totalMisses:  0,
+  roundMisses:  0,
+  firstTry:     true,
+  roundResults: [],   // 'clean' | 'miss' per round
+  interacting:  true,
+  keypadInput:  '',
+  // boss
+  bossStart:       1,
+  bossViewStart:   1,
+  bossHop:         0,
+  bossTarget:      0,
+  bossFirstTry:    true,
+  kongStart:       1,
+  kongViewStart:   1,
+  bossInput:       '',
+  bossInteracting: true,
+  playerWon:       false,
+};
+
+const RACE_STEPS = 5;
+const BOSS_FINISH = 10;
+
+const LEVEL_CFG = {
+  1: { char: 'chimpanzee', label: 'Chimp',     treeCount: 10, maxHop: 5, startMin: 1,  startMax: 1  },
+  2: { char: 'orangutan',  label: 'Orangutan', treeCount: 10, maxHop: 9, startMin: 1,  startMax: 1  },
+  3: { char: 'gorilla',    label: 'Gorilla',   treeCount: 0,  maxHop: 9, startMin: 2,  startMax: 15 },
+};
+
+const TREE_IMGS = [
+  'assets/tree-1.png',
+  'assets/tree-2.png',
+  'assets/tree-3.png',
+  'assets/tree-4.png',
+];
+
+// ============================= AUDIO =============================
+function mkAudio(src) {
+  const a = new Audio(src);
+  a.preload = 'auto';
+  return a;
+}
+
+const SFX = {
+  correct: mkAudio('assets/sfc-correct.wav'),
+  wrong:   mkAudio('assets/sfx-wrong.wav'),
+  victory: mkAudio('assets/sfx-victory.wav'),
+  roar:    mkAudio('assets/sfx-roar.mp3'),
+  whoosh:  mkAudio('assets/whoosh.wav'),
+  ouch:    mkAudio('assets/ouch.wav'),
+  yahoo:   mkAudio('assets/yahoo.mp3'),
+};
+
+const bossMusic = mkAudio('assets/jungle-boss-race.wav');
+bossMusic.loop = true;
+
+function play(name) {
+  const s = SFX[name];
+  if (!s) return;
+  s.currentTime = 0;
+  s.play().catch(() => {});
+}
+
+function startBossMusic() { bossMusic.currentTime = 0; bossMusic.play().catch(() => {}); }
+function stopBossMusic()  { bossMusic.pause(); bossMusic.currentTime = 0; }
+
+// ============================= SCREEN NAV ========================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.hidden = true);
+  const el = document.getElementById(id);
+  el.hidden = false;
+  el.classList.remove('fade-in');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
+}
+
+function goHome() {
+  stopBossMusic();
+  showScreen('start-screen');
+}
+
+function playAgain() {
+  stopBossMusic();
+  startGame();
+}
+
+// ============================= START SCREEN ======================
+selectLevel(1); // default
+
+function selectLevel(n) {
+  G.level = n;
+  document.querySelectorAll('.level-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.level === n);
+  });
+}
+
+function startGame() {
+  const cfg = LEVEL_CFG[G.level];
+  // Reset state
+  G.round        = 0;
+  G.startTree    = 0;
+  G.viewStart    = 1;
+  G.totalMisses  = 0;
+  G.roundMisses  = 0;
+  G.firstTry     = true;
+  G.roundResults = [];
+  G.interacting  = true;
+  G.keypadInput  = '';
+
+  // Set ape image throughout
+  document.getElementById('ape-img').src = `assets/${cfg.char}-idle.png`;
+
+  // Show/hide tree row vs keypad
+  const isKeypad = cfg.treeCount === 0;
+  document.getElementById('tree-row-wrap').style.display = isKeypad ? 'none' : 'flex';
+  document.getElementById('keypad-wrap').style.display   = isKeypad ? 'flex' : 'none';
+
+  showScreen('game-screen');
+  updateHUD();
+  setTimeout(nextRound, 500);
+}
+
+// ============================= HUD ===============================
+function updateHUD() {
+  document.getElementById('round-num').textContent = G.round;
+  document.getElementById('miss-badge').textContent = `Misses: ${G.totalMisses}`;
+
+  const pips = document.getElementById('pips');
+  pips.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'pip';
+    if (i < G.roundResults.length) {
+      pip.classList.add('done');
+      if (G.roundResults[i] === 'miss') pip.classList.add('miss');
+    }
+    pips.appendChild(pip);
+  }
+}
+
+// ============================= QUESTION GEN ======================
+function generateQuestion() {
+  const cfg = LEVEL_CFG[G.level];
+  if (G.round === 1) {
+    // First round: random start
+    G.startTree = cfg.startMin + Math.floor(Math.random() * (cfg.startMax - cfg.startMin + 1));
+  } else {
+    // Continuity: start where we landed last round
+    G.startTree = G.targetTree;
+  }
+  const hop   = 1 + Math.floor(Math.random() * cfg.maxHop);
+  G.hopCount   = hop;
+  G.targetTree = G.startTree + hop;
+  G.roundMisses  = 0;
+  G.firstTry     = true;
+  G.interacting  = true;
+  G.keypadInput  = '';
+}
+
+function nextRound() {
+  G.round++;
+  generateQuestion();
+  updateHUD();
+
+  document.getElementById('prompt-text').innerHTML =
+    `Count on <span class="hop-num">${G.hopCount}</span> from tree <span class="hop-num">${G.startTree}</span>!`;
+
+  const cfg = LEVEL_CFG[G.level];
+  if (cfg.treeCount > 0) {
+    const viewEnd = G.viewStart + cfg.treeCount - 1;
+    if (G.targetTree > viewEnd) {
+      // Scroll so startTree becomes leftmost, then render
+      scrollTrees(G.startTree, () => renderTrees());
+    } else {
+      renderTrees();
+    }
+  } else {
+    renderKeypadQuestion();
+  }
+  hideHintBar();
+}
+
+// ============================= TREE RENDERING ====================
+function renderTrees() {
+  const cfg   = LEVEL_CFG[G.level];
+  const count = cfg.treeCount;
+  const row   = document.getElementById('tree-row');
+  row.innerHTML = '';
+
+  // Reset any scroll styles
+  row.style.transition = 'none';
+  row.style.transform = 'translateX(0)';
+  row.style.width = '100%';
+
+  // Hide flying ape
+  const flyingApe = document.getElementById('flying-ape');
+  flyingApe.style.display = 'none';
+
+  for (let i = 0; i < count; i++) {
+    const num  = G.viewStart + i;
+    const slot = document.createElement('div');
+    slot.className = 'tree-slot';
+    slot.dataset.num = num;
+
+    const treeImg = document.createElement('img');
+    treeImg.className = 'tree-img';
+    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.alt = `Tree ${num}`;
+
+    const numEl = document.createElement('div');
+    numEl.className = 'tree-num';
+    numEl.textContent = num;
+
+    slot.appendChild(treeImg);
+    slot.appendChild(numEl);
+
+    if (num === G.startTree) {
+      // Starting tree — gold border, ape on top, no click
+      slot.classList.add('start-tree');
+      const apeEl = document.createElement('img');
+      apeEl.className = 'tree-ape';
+      apeEl.src = `assets/${cfg.char}-idle.png`;
+      apeEl.alt = 'Ape';
+      slot.appendChild(apeEl);
+    } else if (num > G.startTree) {
+      // Only trees after the start tree are clickable
+      slot.onclick = () => onTreeClick(num);
+    }
+
+    // Show banana on target tree in the last round
+    if (G.round === 5 && num === G.targetTree) {
+      const banana = document.createElement('img');
+      banana.className = 'tree-ape';
+      banana.src = 'assets/banana-stash.png';
+      banana.alt = 'Bananas';
+      banana.style.height = 'clamp(40px, 7vw, 70px)';
+      slot.appendChild(banana);
+    }
+
+    row.appendChild(slot);
+  }
+}
+
+// ============================= SCROLL ANIMATION =================
+function scrollTrees(newViewStart, callback) {
+  const cfg = LEVEL_CFG[G.level];
+  const count = cfg.treeCount;
+  const oldViewStart = G.viewStart;
+  const scrollCount = newViewStart - oldViewStart;
+
+  if (scrollCount <= 0) { callback(); return; }
+
+  const row  = document.getElementById('tree-row');
+  const wrap = document.getElementById('tree-row-wrap');
+
+  // Measure slot width from current layout
+  const gap = parseFloat(getComputedStyle(row).gap) || 8;
+  const wrapWidth = wrap.clientWidth;
+  const slotWidth = (wrapWidth - (count - 1) * gap) / count;
+
+  // Total trees: current visible + new ones scrolling in
+  const totalTrees = count + scrollCount;
+
+  // Clip horizontal overflow during scroll
+  wrap.style.overflow = 'hidden';
+
+  // Build extended tree row
+  row.innerHTML = '';
+  row.style.transition = 'none';
+  row.style.transform = 'translateX(0)';
+  row.style.width = (totalTrees * slotWidth + (totalTrees - 1) * gap) + 'px';
+  row.style.justifyContent = 'flex-start';
+
+  for (let i = 0; i < totalTrees; i++) {
+    const num = oldViewStart + i;
+    const slot = document.createElement('div');
+    slot.className = 'tree-slot';
+    slot.dataset.num = num;
+    slot.style.flex = '0 0 auto';
+    slot.style.width = slotWidth + 'px';
+
+    const treeImg = document.createElement('img');
+    treeImg.className = 'tree-img';
+    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.alt = `Tree ${num}`;
+
+    const numEl = document.createElement('div');
+    numEl.className = 'tree-num';
+    numEl.textContent = num;
+
+    slot.appendChild(treeImg);
+    slot.appendChild(numEl);
+
+    if (num === G.startTree) {
+      slot.classList.add('start-tree');
+      const apeEl = document.createElement('img');
+      apeEl.className = 'tree-ape';
+      apeEl.src = `assets/${cfg.char}-idle.png`;
+      apeEl.alt = 'Ape';
+      slot.appendChild(apeEl);
+    }
+
+    row.appendChild(slot);
+  }
+
+  // Force reflow
+  void row.offsetWidth;
+
+  // Animate slide left
+  const scrollDist = scrollCount * (slotWidth + gap);
+  row.style.transition = 'transform 1.4s ease-in-out';
+  row.style.transform = `translateX(-${scrollDist}px)`;
+
+  row.addEventListener('transitionend', function handler() {
+    row.removeEventListener('transitionend', handler);
+    G.viewStart = newViewStart;
+    row.style.transition = 'none';
+    row.style.transform = 'translateX(0)';
+    row.style.width = '100%';
+    row.style.justifyContent = '';
+    wrap.style.overflow = '';
+    callback();
+  }, { once: true });
+}
+
+// ============================= TREE CLICK ========================
+function onTreeClick(num) {
+  if (!G.interacting) return;
+  G.interacting = false;
+
+  if (num === G.targetTree) {
+    handleCorrect(num);
+  } else {
+    handleWrong(num);
+  }
+}
+
+function handleCorrect(num) {
+  const row        = document.getElementById('tree-row');
+  const slots      = row.querySelectorAll('.tree-slot');
+  const startIdx   = G.startTree - G.viewStart;
+  const startSlot  = slots[startIdx];
+  const cfg        = LEVEL_CFG[G.level];
+
+  // Hide the tree-ape on start tree
+  const treeApe = startSlot.querySelector('.tree-ape');
+  if (treeApe) treeApe.style.opacity = '0';
+
+  const flyingApe = document.getElementById('flying-ape');
+  flyingApe.src = `assets/${cfg.char}-jump.png`;
+  flyingApe.style.display = 'block';
+  flyingApe.style.transform = 'translateX(-50%)';
+
+  const gameArea = document.getElementById('game-area');
+
+  // Hop tree by tree: startTree → startTree+1 → ... → targetTree
+  const hops = [];
+  for (let t = G.startTree; t <= G.targetTree; t++) {
+    const idx = t - G.viewStart;
+    if (slots[idx]) hops.push(slots[idx]);
+  }
+
+  let hopIdx = 0;
+
+  function doHop() {
+    if (hopIdx >= hops.length - 1) {
+      // Landed on final tree
+      play('correct');
+      flyingApe.style.display = 'none';
+
+      const targetSlot = hops[hops.length - 1];
+      const landedApe = document.createElement('img');
+      landedApe.className = 'tree-ape';
+      landedApe.src = `assets/${cfg.char}-idle.png`;
+      landedApe.alt = 'Ape';
+      targetSlot.appendChild(landedApe);
+
+      targetSlot.classList.add('correct-flash');
+      setTimeout(() => targetSlot.classList.remove('correct-flash'), 1000);
+
+      setTimeout(() => finishRound(), 500);
+      return;
+    }
+
+    play('whoosh');
+
+    const fromSlot = hops[hopIdx];
+    const toSlot   = hops[hopIdx + 1];
+    const gameRect = gameArea.getBoundingClientRect();
+    const fromRect = fromSlot.getBoundingClientRect();
+    const toRect   = toSlot.getBoundingClientRect();
+
+    const sx = fromRect.left + fromRect.width / 2 - gameRect.left;
+    const sy = fromRect.top - gameRect.top - 10;
+    const ex = toRect.left + toRect.width / 2 - gameRect.left;
+    const ey = toRect.top - gameRect.top - 10;
+
+    flyingApe.style.left = sx + 'px';
+    flyingApe.style.top  = sy + 'px';
+
+    const duration = 280;
+    const arcH = -60;
+    const t0 = performance.now();
+
+    function tick(now) {
+      const t = Math.min((now - t0) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 2);
+      const x = sx + (ex - sx) * ease;
+      const arcY = arcH * 4 * t * (1 - t);
+      const y = sy + (ey - sy) * ease + arcY;
+      flyingApe.style.left = x + 'px';
+      flyingApe.style.top  = y + 'px';
+
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        // Briefly show count number on tree
+        const toNum = parseInt(toSlot.dataset.num);
+        const numEl = toSlot.querySelector('.tree-num');
+        if (numEl) {
+          numEl.style.color = 'var(--gold)';
+          numEl.style.transform = 'scale(1.3)';
+          numEl.style.transition = 'all 0.2s';
+          setTimeout(() => {
+            numEl.style.color = '';
+            numEl.style.transform = '';
+          }, 350);
+        }
+
+        hopIdx++;
+        setTimeout(doHop, 180);
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  doHop();
+}
+
+function handleWrong(num) {
+  G.totalMisses++;
+  G.roundMisses++;
+  G.firstTry = false;
+  play('ouch');
+  updateHUD();
+
+  const row        = document.getElementById('tree-row');
+  const slots      = row.querySelectorAll('.tree-slot');
+  const clickedIdx = num - G.viewStart;
+  const clickedSlot = slots[clickedIdx];
+
+  // Shake the clicked slot
+  clickedSlot.classList.remove('wrong-flash');
+  void clickedSlot.offsetWidth;
+  clickedSlot.classList.add('wrong-flash');
+
+  // Tree-ape fall animation on start tree
+  const startIdx = G.startTree - G.viewStart;
+  const treeApe = slots[startIdx].querySelector('.tree-ape');
+  if (treeApe) {
+    treeApe.src = `assets/${LEVEL_CFG[G.level].char}-fall.png`;
+    treeApe.classList.remove('falling');
+    void treeApe.offsetWidth;
+    treeApe.classList.add('falling');
+    setTimeout(() => {
+      treeApe.classList.remove('falling');
+      treeApe.src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
+    }, 900);
+  }
+
+  // Prompt ape shake + fall pose
+  const apeImg = document.getElementById('ape-img');
+  apeImg.src = `assets/${LEVEL_CFG[G.level].char}-fall.png`;
+  apeImg.classList.remove('shaking');
+  void apeImg.offsetWidth;
+  apeImg.classList.add('shaking');
+
+  setTimeout(() => {
+    clickedSlot.classList.remove('wrong-flash');
+    apeImg.classList.remove('shaking');
+    apeImg.src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
+    G.interacting = true;
+  }, 1000);
+
+  if (G.roundMisses >= 2) {
+    showHintBar(`Try counting on your fingers from ${G.startTree}!`);
+  }
+}
+
+// ============================= ROUND COMPLETION ==================
+function finishRound() {
+  G.roundResults.push(G.firstTry ? 'clean' : 'miss');
+  updateHUD();
+
+  if (G.round >= 5) {
+    setTimeout(showBananaScreen, 400);
+  } else {
+    setTimeout(nextRound, 350);
+  }
+}
+
+// ============================= L3 KEYPAD ========================
+function renderKeypadQuestion() {
+  document.getElementById('keypad-display').textContent = '?';
+  G.keypadInput = '';
+}
+
+function keypadDigit(d) {
+  if (!G.interacting) return;
+  if (G.keypadInput.length >= 2) return;
+  G.keypadInput += d;
+  document.getElementById('keypad-display').textContent = G.keypadInput;
+}
+
+function keypadDel() {
+  G.keypadInput = G.keypadInput.slice(0, -1) || '';
+  document.getElementById('keypad-display').textContent = G.keypadInput || '?';
+}
+
+function keypadSubmit() {
+  if (!G.interacting) return;
+  if (!G.keypadInput) return;
+  const answer = parseInt(G.keypadInput, 10);
+  G.interacting = false;
+
+  if (answer === G.targetTree) {
+    keypadCorrect();
+  } else {
+    keypadWrong();
+  }
+}
+
+function keypadCorrect() {
+  play('whoosh');
+  setTimeout(() => play('correct'), 300);
+  document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-jump.png`;
+  document.getElementById('keypad-display').textContent = G.targetTree;
+  setTimeout(() => {
+    document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
+    finishRound();
+  }, 900);
+}
+
+function keypadWrong() {
+  G.totalMisses++;
+  G.roundMisses++;
+  G.firstTry = false;
+  play('ouch');
+  updateHUD();
+
+  document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-fall.png`;
+  document.getElementById('keypad-display').textContent = '?';
+  G.keypadInput = '';
+
+  if (G.roundMisses >= 2) {
+    showHintBar(`${G.startTree} + ${G.hopCount} = ? Count on your fingers!`);
+  }
+
+  setTimeout(() => {
+    document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
+    G.interacting = true;
+  }, 900);
+}
+
+// ============================= BANANA SCREEN =====================
+function showBananaScreen() {
+  play('yahoo');
+  setTimeout(() => play('victory'), 400);
+
+  showScreen('banana-screen');
+
+  const img = document.getElementById('banana-stash-img');
+  img.classList.remove('landed');
+  void img.offsetWidth;
+  setTimeout(() => img.classList.add('landed'), 100);
+
+  document.getElementById('banana-sub').textContent = 'But King Kong is coming for them...';
+
+  setTimeout(showBossCutscene, 2800);
+}
+
+// ============================= BOSS CUTSCENE =====================
+function showBossCutscene() {
+  showScreen('boss-cutscene');
+
+  const kongImg    = document.getElementById('cutscene-kong-img');
+  const speakerEl  = document.getElementById('cutscene-speaker');
+  const textEl     = document.getElementById('cutscene-text');
+  const tapEl      = document.getElementById('cutscene-tap');
+
+  kongImg.classList.remove('entered');
+  speakerEl.classList.remove('visible');
+  tapEl.classList.remove('visible');
+  textEl.textContent = '';
+
+  setTimeout(() => {
+    play('roar');
+    kongImg.classList.add('entered');
+  }, 400);
+
+  setTimeout(() => {
+    speakerEl.classList.add('visible');
+    textEl.textContent = 'ROOOAR! You found my bananas?! Let\'s race — winner takes ALL!';
+    tapEl.classList.add('visible');
+  }, 1200);
+}
+
+function cutsceneAdvance() {
+  startBossRace();
+}
+
+// ============================= BOSS RACE =========================
+function startBossRace() {
+  G.bossStart      = 1;
+  G.bossViewStart  = 1;
+  G.bossHop        = 0;
+  G.bossTarget     = 0;
+  G.bossFirstTry   = true;
+  G.kongStart      = 1;
+  G.kongViewStart  = 1;
+  G.bossInput      = '';
+  G.bossInteracting = true;
+
+  const cfg = LEVEL_CFG[G.level];
+  const isKeypad = cfg.treeCount === 0;
+
+  document.getElementById('boss-player-tag').textContent = cfg.label.toUpperCase();
+  document.getElementById('boss-finish-num').textContent = BOSS_FINISH;
+
+  // Show tree rows or keypad based on level
+  document.getElementById('kong-tree-row-wrap').style.display    = isKeypad ? 'none' : 'flex';
+  document.getElementById('boss-tree-row-wrap').style.display    = isKeypad ? 'none' : 'flex';
+  document.getElementById('boss-keypad-wrap').style.display      = isKeypad ? 'flex' : 'none';
+  // Hide row headers for keypad levels
+  const headers = document.querySelectorAll('#boss-area .boss-row-header');
+  headers.forEach(h => h.style.display = isKeypad ? 'none' : 'flex');
+
+  updateBossPositions();
+  showScreen('boss-screen');
+
+  setTimeout(nextBossQuestion, 600);
+}
+
+function updateBossPositions() {
+  document.getElementById('kong-pos-num').textContent = G.kongStart;
+  document.getElementById('player-pos-num').textContent = G.bossStart;
+}
+
+function nextBossQuestion() {
+  const cfg = LEVEL_CFG[G.level];
+  const maxPossible = Math.min(cfg.maxHop, BOSS_FINISH - G.bossStart);
+  const hop = 1 + Math.floor(Math.random() * maxPossible);
+  G.bossHop      = hop;
+  G.bossTarget   = G.bossStart + hop;
+  G.bossFirstTry = true;
+  G.bossInput    = '';
+  G.bossInteracting = true;
+
+  document.getElementById('boss-question').innerHTML =
+    `Count on <span class="hop-num">${hop}</span> from tree <span class="hop-num">${G.bossStart}</span>!`;
+
+  if (cfg.treeCount > 0) {
+    // Check if player's target is beyond visible area
+    const playerViewEnd = G.bossViewStart + cfg.treeCount - 1;
+    if (G.bossTarget > playerViewEnd) {
+      // Scroll both rows together so they stay synced
+      scrollBossTreeRow('boss-tree-row', 'boss-tree-row-wrap', 'bossViewStart', G.bossStart, () => {
+        renderBossTrees();
+      });
+      // Sync Kong's view to same position
+      const kongNeedsScroll = G.bossStart > G.kongViewStart;
+      if (kongNeedsScroll) {
+        scrollBossTreeRow('kong-tree-row', 'kong-tree-row-wrap', 'kongViewStart', G.bossStart, () => {
+          renderKongTrees();
+        });
+      } else {
+        renderKongTrees();
+      }
+    } else {
+      renderBossTrees();
+      renderKongTrees();
+    }
+  } else {
+    document.getElementById('boss-keypad-display').textContent = '?';
+  }
+
+  updateBossPositions();
+}
+
+// ============================= BOSS TREE RENDERING ===============
+function renderBossTrees() {
+  const cfg   = LEVEL_CFG[G.level];
+  const count = cfg.treeCount;
+  const row   = document.getElementById('boss-tree-row');
+  row.innerHTML = '';
+  row.style.transition = 'none';
+  row.style.transform = 'translateX(0)';
+  row.style.width = '100%';
+
+  const flyingApe = document.getElementById('boss-flying-ape');
+  flyingApe.style.display = 'none';
+
+  for (let i = 0; i < count; i++) {
+    const num  = G.bossViewStart + i;
+    const slot = document.createElement('div');
+    slot.className = 'tree-slot';
+    slot.dataset.num = num;
+
+    const treeImg = document.createElement('img');
+    treeImg.className = 'tree-img';
+    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.alt = `Tree ${num}`;
+
+    const numEl = document.createElement('div');
+    numEl.className = 'tree-num';
+    numEl.textContent = num;
+
+    slot.appendChild(treeImg);
+    slot.appendChild(numEl);
+
+    if (num === G.bossStart) {
+      slot.classList.add('start-tree');
+      const apeEl = document.createElement('img');
+      apeEl.className = 'tree-ape';
+      apeEl.src = `assets/${cfg.char}-idle.png`;
+      apeEl.alt = 'Ape';
+      slot.appendChild(apeEl);
+    } else if (num > G.bossStart) {
+      slot.onclick = () => onBossTreeClick(num);
+    }
+
+    // Show banana on the finish tree
+    if (num === BOSS_FINISH) {
+      const banana = document.createElement('img');
+      banana.className = 'tree-ape';
+      banana.src = 'assets/banana-stash.png';
+      banana.alt = 'Bananas';
+      banana.style.height = 'clamp(30px, 5vw, 50px)';
+      slot.appendChild(banana);
+    }
+
+    row.appendChild(slot);
+  }
+}
+
+function renderKongTrees() {
+  const cfg   = LEVEL_CFG[G.level];
+  const count = cfg.treeCount;
+  const row   = document.getElementById('kong-tree-row');
+  row.innerHTML = '';
+  row.style.transition = 'none';
+  row.style.transform = 'translateX(0)';
+  row.style.width = '100%';
+
+  for (let i = 0; i < count; i++) {
+    const num  = G.kongViewStart + i;
+    const slot = document.createElement('div');
+    slot.className = 'tree-slot';
+    slot.dataset.num = num;
+
+    const treeImg = document.createElement('img');
+    treeImg.className = 'tree-img';
+    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.alt = `Tree ${num}`;
+
+    const numEl = document.createElement('div');
+    numEl.className = 'tree-num';
+    numEl.textContent = num;
+
+    slot.appendChild(treeImg);
+    slot.appendChild(numEl);
+
+    if (num === G.kongStart) {
+      slot.classList.add('kong-start-tree');
+      const kongEl = document.createElement('img');
+      kongEl.className = 'tree-ape kong-ape';
+      kongEl.src = 'assets/king-kong-idle.png';
+      kongEl.alt = 'Kong';
+      kongEl.style.transform = 'translateX(-50%) scaleX(-1)';
+      slot.appendChild(kongEl);
+    }
+
+    // Show banana on the finish tree
+    if (num === BOSS_FINISH) {
+      const banana = document.createElement('img');
+      banana.className = 'tree-ape';
+      banana.src = 'assets/banana-stash.png';
+      banana.alt = 'Bananas';
+      banana.style.height = 'clamp(30px, 5vw, 50px)';
+      slot.appendChild(banana);
+    }
+
+    row.appendChild(slot);
+  }
+}
+
+// ============================= BOSS SCROLL =======================
+function scrollBossTreeRow(rowId, wrapId, viewStartKey, newViewStart, callback) {
+  const cfg = LEVEL_CFG[G.level];
+  const count = cfg.treeCount;
+  const oldViewStart = G[viewStartKey];
+  const scrollCount = newViewStart - oldViewStart;
+
+  if (scrollCount <= 0) { callback(); return; }
+
+  const row  = document.getElementById(rowId);
+  const wrap = document.getElementById(wrapId);
+
+  const gap = parseFloat(getComputedStyle(row).gap) || 6;
+  const wrapWidth = wrap.clientWidth;
+  const slotWidth = (wrapWidth - (count - 1) * gap) / count;
+  const totalTrees = count + scrollCount;
+
+  wrap.style.overflow = 'hidden';
+  row.innerHTML = '';
+  row.style.transition = 'none';
+  row.style.transform = 'translateX(0)';
+  row.style.width = (totalTrees * slotWidth + (totalTrees - 1) * gap) + 'px';
+  row.style.justifyContent = 'flex-start';
+
+  for (let i = 0; i < totalTrees; i++) {
+    const num = oldViewStart + i;
+    const slot = document.createElement('div');
+    slot.className = 'tree-slot';
+    slot.dataset.num = num;
+    slot.style.flex = '0 0 auto';
+    slot.style.width = slotWidth + 'px';
+
+    const treeImg = document.createElement('img');
+    treeImg.className = 'tree-img';
+    treeImg.src = TREE_IMGS[(num - 1) % 4];
+
+    const numEl = document.createElement('div');
+    numEl.className = 'tree-num';
+    numEl.textContent = num;
+
+    slot.appendChild(treeImg);
+    slot.appendChild(numEl);
+
+    // Show relevant character on their start tree
+    if (viewStartKey === 'bossViewStart' && num === G.bossStart) {
+      slot.classList.add('start-tree');
+      const apeEl = document.createElement('img');
+      apeEl.className = 'tree-ape';
+      apeEl.src = `assets/${cfg.char}-idle.png`;
+      slot.appendChild(apeEl);
+    } else if (viewStartKey === 'kongViewStart' && num === G.kongStart) {
+      slot.classList.add('kong-start-tree');
+      const kongEl = document.createElement('img');
+      kongEl.className = 'tree-ape kong-ape';
+      kongEl.src = 'assets/king-kong-idle.png';
+      kongEl.style.transform = 'translateX(-50%) scaleX(-1)';
+      slot.appendChild(kongEl);
+    }
+
+    row.appendChild(slot);
+  }
+
+  void row.offsetWidth;
+
+  const scrollDist = scrollCount * (slotWidth + gap);
+  row.style.transition = 'transform 1.4s ease-in-out';
+  row.style.transform = `translateX(-${scrollDist}px)`;
+
+  row.addEventListener('transitionend', function handler() {
+    row.removeEventListener('transitionend', handler);
+    G[viewStartKey] = newViewStart;
+    row.style.transition = 'none';
+    row.style.transform = 'translateX(0)';
+    row.style.width = '100%';
+    row.style.justifyContent = '';
+    wrap.style.overflow = '';
+    callback();
+  }, { once: true });
+}
+
+function advanceKong(amount, callback) {
+  const cfg = LEVEL_CFG[G.level];
+  G.kongStart = Math.min(G.kongStart + amount, BOSS_FINISH);
+  updateBossPositions();
+
+  if (cfg.treeCount > 0) {
+    const kongViewEnd = G.kongViewStart + cfg.treeCount - 1;
+    if (G.kongStart > kongViewEnd) {
+      scrollBossTreeRow('kong-tree-row', 'kong-tree-row-wrap', 'kongViewStart', G.kongStart, () => {
+        renderKongTrees();
+        if (callback) callback();
+      });
+    } else {
+      renderKongTrees();
+      if (callback) callback();
+    }
+  } else {
+    if (callback) callback();
+  }
+}
+
+// ============================= BOSS TREE CLICK ===================
+function onBossTreeClick(num) {
+  if (!G.bossInteracting) return;
+  G.bossInteracting = false;
+
+  const correct = num === G.bossTarget;
+
+  if (!correct) {
+    // Flash wrong slot
+    const slots = document.getElementById('boss-tree-row').querySelectorAll('.tree-slot');
+    const clickedIdx = num - G.bossViewStart;
+    if (slots[clickedIdx]) {
+      slots[clickedIdx].classList.remove('wrong-flash');
+      void slots[clickedIdx].offsetWidth;
+      slots[clickedIdx].classList.add('wrong-flash');
+      setTimeout(() => slots[clickedIdx].classList.remove('wrong-flash'), 800);
+    }
+    bossHandleAnswer(false);
+    return;
+  }
+
+  // Correct — do tree-by-tree hop animation then handle answer
+  bossHopAnimation(() => bossHandleAnswer(true));
+}
+
+function bossHopAnimation(callback) {
+  const cfg = LEVEL_CFG[G.level];
+  const row = document.getElementById('boss-tree-row');
+  const slots = row.querySelectorAll('.tree-slot');
+  const startIdx = G.bossStart - G.bossViewStart;
+  const startSlot = slots[startIdx];
+
+  // Hide tree-ape on start tree
+  const treeApe = startSlot.querySelector('.tree-ape');
+  if (treeApe) treeApe.style.opacity = '0';
+
+  const flyingApe = document.getElementById('boss-flying-ape');
+  flyingApe.src = `assets/${cfg.char}-jump.png`;
+  flyingApe.style.display = 'block';
+
+  const bossArea = document.getElementById('boss-area');
+
+  // Build hop list from start to target
+  const hops = [];
+  for (let t = G.bossStart; t <= G.bossTarget; t++) {
+    const idx = t - G.bossViewStart;
+    if (slots[idx]) hops.push(slots[idx]);
+  }
+
+  let hopIdx = 0;
+
+  function doHop() {
+    if (hopIdx >= hops.length - 1) {
+      // Landed on final tree
+      play('correct');
+      flyingApe.style.display = 'none';
+
+      const targetSlot = hops[hops.length - 1];
+      const landedApe = document.createElement('img');
+      landedApe.className = 'tree-ape';
+      landedApe.src = `assets/${cfg.char}-idle.png`;
+      landedApe.alt = 'Ape';
+      targetSlot.appendChild(landedApe);
+
+      targetSlot.classList.add('correct-flash');
+      setTimeout(() => targetSlot.classList.remove('correct-flash'), 800);
+
+      setTimeout(callback, 400);
+      return;
+    }
+
+    play('whoosh');
+
+    const fromSlot = hops[hopIdx];
+    const toSlot   = hops[hopIdx + 1];
+    const areaRect = bossArea.getBoundingClientRect();
+    const fromRect = fromSlot.getBoundingClientRect();
+    const toRect   = toSlot.getBoundingClientRect();
+
+    const sx = fromRect.left + fromRect.width / 2 - areaRect.left;
+    const sy = fromRect.top - areaRect.top - 8;
+    const ex = toRect.left + toRect.width / 2 - areaRect.left;
+    const ey = toRect.top - areaRect.top - 8;
+
+    flyingApe.style.left = sx + 'px';
+    flyingApe.style.top  = sy + 'px';
+    flyingApe.style.transform = 'translateX(-50%)';
+
+    const duration = 250;
+    const arcH = -45;
+    const t0 = performance.now();
+
+    function tick(now) {
+      const t = Math.min((now - t0) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 2);
+      const x = sx + (ex - sx) * ease;
+      const arcY = arcH * 4 * t * (1 - t);
+      const y = sy + (ey - sy) * ease + arcY;
+      flyingApe.style.left = x + 'px';
+      flyingApe.style.top  = y + 'px';
+
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        // Flash the number on the landed tree
+        const numEl = toSlot.querySelector('.tree-num');
+        if (numEl) {
+          numEl.style.color = 'var(--gold)';
+          numEl.style.transform = 'scale(1.3)';
+          numEl.style.transition = 'all 0.2s';
+          setTimeout(() => {
+            numEl.style.color = '';
+            numEl.style.transform = '';
+          }, 300);
+        }
+
+        hopIdx++;
+        setTimeout(doHop, 150);
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  doHop();
+}
+
+// ============================= BOSS KEYPAD (L3) =================
+function bossKeypadDigit(d) {
+  if (!G.bossInteracting) return;
+  if (G.bossInput.length >= 2) return;
+  G.bossInput += d;
+  document.getElementById('boss-keypad-display').textContent = G.bossInput;
+}
+
+function bossKeypadDel() {
+  G.bossInput = G.bossInput.slice(0, -1) || '';
+  document.getElementById('boss-keypad-display').textContent = G.bossInput || '?';
+}
+
+function bossKeypadSubmit() {
+  if (!G.bossInteracting) return;
+  if (!G.bossInput) return;
+  const answer = parseInt(G.bossInput, 10);
+  G.bossInteracting = false;
+
+  const correct = answer === G.bossTarget;
+  bossHandleAnswer(correct);
+}
+
+// ============================= BOSS ANSWER HANDLER ==============
+function bossHandleAnswer(correct) {
+  const cfg = LEVEL_CFG[G.level];
+
+  if (correct) {
+    // SFX already played by hop animation for tree levels; play for keypad only
+    if (cfg.treeCount === 0) {
+      play('whoosh');
+      setTimeout(() => play('correct'), 300);
+    }
+
+    // Player advances first — cap at finish line
+    G.bossStart = Math.min(G.bossTarget, BOSS_FINISH);
+    updateBossPositions();
+
+    // Check if player wins immediately
+    if (G.bossStart >= BOSS_FINISH) {
+      setTimeout(() => { G.playerWon = true; endBossRace(); }, 600);
+      return;
+    }
+
+    // Then Kong advances (only on first try — no double penalty)
+    if (G.bossFirstTry) {
+      setTimeout(() => {
+        advanceKong(G.bossHop, () => {
+          if (G.kongStart >= BOSS_FINISH) {
+            G.playerWon = false;
+            endBossRace();
+          } else {
+            setTimeout(nextBossQuestion, 400);
+          }
+        });
+      }, 800);
+    } else {
+      // After miss retry — player advances, Kong doesn't get another bonus
+      setTimeout(nextBossQuestion, 600);
+    }
+
+  } else {
+    play('ouch');
+    G.bossFirstTry = false;
+
+    // Kong advances by half the hop (min 1)
+    const kongAdvance = Math.max(1, Math.floor(G.bossHop / 2));
+    setTimeout(() => {
+      advanceKong(kongAdvance, () => {
+        if (G.kongStart >= BOSS_FINISH) {
+          G.playerWon = false;
+          endBossRace();
+        } else {
+          G.bossInteracting = true;
+        }
+      });
+    }, 600);
+
+    // Reset player input
+    G.bossInput = '';
+    if (cfg.treeCount === 0) {
+      document.getElementById('boss-keypad-display').textContent = '?';
+    }
+  }
+}
+
+// ============================= END BOSS RACE =====================
+function endBossRace() {
+  stopBossMusic();
+  setTimeout(showEndCutscene, 600);
+}
+
+// ============================= END CUTSCENE ======================
+const KONG_WIN_LINES = [
+  "Ha ha ha! Those bananas are MINE! Better luck next time, slowpoke!",
+  "Too slow, banana brain! I'm the KING of counting!",
+  "Yoink! ALL the bananas! Maybe try counting on your toes too!",
+  "I win I win I WIN! Mmm, these bananas are SO yummy!",
+  "Nice try, little ape! But nobody beats King Kong! ROOOAR!",
+];
+
+const KONG_LOSE_LINES = [
+  "WHAT?! No no no! Those were MY bananas! This isn't fair!",
+  "Grrrr! You got lucky! I want a rematch RIGHT NOW!",
+  "I can't believe it! I practiced counting ALL week!",
+  "Nooooo! My beautiful bananas! I'm gonna go cry in my cave!",
+  "You cheated! ...Okay fine, you didn't. But I'm still MAD!",
+];
+
+function showEndCutscene() {
+  showScreen('end-cutscene');
+
+  const kongImg   = document.getElementById('end-cutscene-kong-img');
+  const speakerEl = document.getElementById('end-cutscene-speaker');
+  const textEl    = document.getElementById('end-cutscene-text');
+  const tapEl     = document.getElementById('end-cutscene-tap');
+
+  kongImg.classList.remove('entered');
+  speakerEl.classList.remove('visible');
+  tapEl.classList.remove('visible');
+  textEl.textContent = '';
+
+  if (G.playerWon) {
+    kongImg.src = 'assets/king-kong-sad.png';
+  } else {
+    kongImg.src = 'assets/king-kong-victory.png';
+  }
+
+  setTimeout(() => {
+    if (G.playerWon) {
+      play('roar');
+    } else {
+      play('roar');
+    }
+    kongImg.classList.add('entered');
+  }, 400);
+
+  setTimeout(() => {
+    speakerEl.classList.add('visible');
+    const lines = G.playerWon ? KONG_LOSE_LINES : KONG_WIN_LINES;
+    textEl.textContent = lines[Math.floor(Math.random() * lines.length)];
+    tapEl.classList.add('visible');
+  }, 1200);
+}
+
+function endCutsceneAdvance() {
+  const cfg = LEVEL_CFG[G.level];
+
+  if (G.playerWon) {
+    play('yahoo');
+    setTimeout(() => play('victory'), 400);
+    showConfetti();
+    document.getElementById('result-title').textContent = 'You got the bananas!';
+    document.getElementById('result-img').src = `assets/${cfg.char}-victory.png`;
+    const msgs = [
+      'King Kong never stood a chance!',
+      'You counted on perfectly!',
+      'What a champion ape!',
+      'King Kong is SO jealous!',
+    ];
+    document.getElementById('result-msg').textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  } else {
+    document.getElementById('result-title').textContent = 'Kong got there first!';
+    document.getElementById('result-img').src = 'assets/king-kong-victory.png';
+    const msgs = [
+      `${cfg.label} says: practice counting on and we'll win next time!`,
+      'So close! Count on a little faster next time.',
+      'Kong got lucky. Try again!',
+    ];
+    document.getElementById('result-msg').textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  }
+
+  showScreen('result-screen');
+}
+
+// ============================= HINT BAR ==========================
+let hintTimer = null;
+
+function showHintBar(text, persistent = false) {
+  const bar = document.getElementById('hint-bar');
+  bar.textContent = text;
+  bar.classList.remove('hidden');
+  clearTimeout(hintTimer);
+  if (!persistent) {
+    hintTimer = setTimeout(() => bar.classList.add('hidden'), 2200);
+  }
+}
+
+function hideHintBar() {
+  clearTimeout(hintTimer);
+  document.getElementById('hint-bar').classList.add('hidden');
+}
+
+// ============================= CONFETTI ==========================
+function showConfetti() {
+  const container = document.getElementById('result-screen');
+  const colors = ['#FFD700','#FF6633','#66FF99','#FFDD44','#FF4488','#44AAFF','#FF9900','#88FF44'];
+  for (let i = 0; i < 52; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[i % colors.length]};
+      animation-delay: ${(Math.random() * 1.4).toFixed(2)}s;
+      animation-duration: ${(1.4 + Math.random() * 0.9).toFixed(2)}s;
+      width: ${6 + Math.floor(Math.random() * 8)}px;
+      height: ${6 + Math.floor(Math.random() * 8)}px;
+      border-radius: ${Math.random() < 0.4 ? '50%' : '3px'};
+    `;
+    container.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+// ============================= INIT ==============================
+showScreen('start-screen');
+</script>
+</body>
+</html>

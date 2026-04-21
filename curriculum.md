@@ -85,7 +85,21 @@ Based on classroom newsletters (January–April 2026).
 
 ---
 
-## 8. Money (Intro)
+## 9. Word Problems
+
+| Skill | Target |
+|---|---|
+| Solve addition word problems | Use objects or pictures to model and solve |
+| Solve subtraction word problems | Use objects or pictures to model and solve |
+| Choose the operation | Decide whether to add or subtract based on the story |
+
+**Strategies:** Prepare (understand the problem) → Solve (use objects, pictures, or numbers) → Look Back (check the answer)
+
+**Practice:** Give real-life word problems: "You have 4 cheerios. I give you 2 more. How many do you have now?" Let Athar decide whether to add or subtract before solving.
+
+---
+
+## 10. Money (Intro)
 
 | Coin | Value |
 |---|---|
@@ -104,7 +118,40 @@ Based on classroom newsletters (January–April 2026).
 2. Doubles facts (1+1 through 6+6)
 3. Decomposing numbers 5–9 all ways
 4. Counting on / counting back strategies
-5. Teen numbers (recognize, write, decompose)
-6. Comparing numbers 1–20
-7. Skip counting by 10s to 100
-8. Coin names and values
+5. Word problems (choosing the operation, modeling with objects)
+6. Teen numbers (recognize, write, decompose)
+7. Comparing numbers 1–20
+8. Skip counting by 10s to 100
+9. Coin names and values
+
+---
+
+## Athar's Current Status (April 2026)
+
+**Solid:**
+- Number recognition to 100 (occasional transposals, but self-corrects)
+- Comparing numbers to 100
+- Doubles facts (mostly memorized, some gaps)
+
+**Needs work:**
+- Addition within 10 — even +1 and +2 are tricky
+- Subtraction within 10 — not yet solid
+- Counting on/back as a strategy — knows the sequence mechanically when given a running start (e.g., "8, 9, 10…"), but doesn't yet respond reliably to the instruction "count on from 8" or "count back from 10"
+
+---
+
+## Natural Learning Progression
+
+Concepts build on each other in this order. Mastering each one makes the next easier.
+
+1. **Counting on** (concept + vocabulary) — he does it mechanically, just needs to connect the label "count on" to the action. This is the unlock for all addition.
+2. **Addition +1, +2, +3** — trivial once counting on clicks; they are literally counting on 1, 2, or 3 steps.
+3. **Doubles** — close the remaining gaps.
+4. **Pairs that make 10** — memorize explicitly (6+4, 7+3, 8+2, 9+1). Load-bearing for everything later.
+5. **Remaining addition facts within 10** — anchor to doubles and making-10 pairs to derive the rest.
+6. **Counting back** (concept + vocabulary) — mirror of step 1; same situation.
+7. **Subtraction facts within 10** — flows naturally from counting back.
+8. **Decomposing numbers all ways** — e.g., all ways to break apart 7; ties addition and subtraction together.
+9. **Teen numbers / place value** — 14 = 10 + 4; builds on all the above.
+
+**Key insight:** Counting on and counting back are the bridge between counting (which Athar has) and arithmetic (which he needs). The gap is mostly vocabulary and confidence, not underlying ability. Unlock these two first before drilling more facts.
