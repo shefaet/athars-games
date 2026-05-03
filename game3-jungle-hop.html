@@ -209,11 +209,6 @@
       width: 100%;
       justify-content: center;
     }
-    #ape-img {
-      height: clamp(90px, 18vh, 180px);
-      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.7));
-      flex-shrink: 0;
-    }
     #prompt-text {
       font-size: clamp(20px, 3.5vw, 42px);
       color: #fff;
@@ -337,15 +332,7 @@
     }
     .tree-slot.correct-flash { animation: slotCorrect 0.55s ease-in-out 2; }
 
-    /* Ape image shake on wrong (prompt area) */
-    @keyframes apeShake {
-      0%,100% { transform: translateX(0) rotate(0deg); }
-      20%     { transform: translateX(-8px) rotate(-5deg); }
-      40%     { transform: translateX(8px) rotate(5deg); }
-      60%     { transform: translateX(-5px) rotate(-3deg); }
-      80%     { transform: translateX(5px) rotate(3deg); }
-    }
-    #ape-img.shaking { animation: apeShake 0.45s ease-in-out; }
+
 
     /* ===== HINT BAR ===== */
     #hint-bar {
@@ -371,35 +358,44 @@
     /* ===== L3 KEYPAD ===== */
     #keypad-wrap {
       display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: center;
+      gap: clamp(8px, 1.5vw, 20px);
+      z-index: 2;
+      width: 100%;
+      position: relative;
+    }
+    .keypad-center {
+      display: flex;
       flex-direction: column;
       align-items: center;
-      gap: clamp(8px, 1.5vh, 18px);
-      z-index: 2;
+      gap: clamp(6px, 1vh, 14px);
     }
     #keypad-display {
-      font-size: clamp(36px, 7vw, 80px);
+      font-size: clamp(30px, 5.5vw, 64px);
       color: var(--gold);
       text-shadow: 0 3px 12px rgba(0,0,0,0.8);
-      min-width: clamp(60px, 10vw, 120px);
+      min-width: clamp(50px, 8vw, 100px);
       text-align: center;
       background: rgba(0,0,0,0.6);
       border-radius: 12px;
-      padding: clamp(4px, 0.8vh, 10px) clamp(16px, 2.5vw, 30px);
+      padding: clamp(3px, 0.6vh, 8px) clamp(12px, 2vw, 24px);
       border: 2px solid rgba(255,215,0,0.4);
     }
     .keypad-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: clamp(6px, 1vw, 14px);
+      gap: clamp(4px, 0.7vw, 10px);
     }
     .key-btn {
-      width:  clamp(56px, 9vw, 100px);
-      height: clamp(56px, 9vw, 100px);
-      border-radius: clamp(10px, 1.5vw, 18px);
+      width:  clamp(44px, 7vw, 80px);
+      height: clamp(44px, 7vw, 80px);
+      border-radius: clamp(8px, 1.2vw, 14px);
       background: rgba(255,255,255,0.12);
       border: 2px solid rgba(255,255,255,0.28);
       color: #fff;
-      font-size: clamp(22px, 3.5vw, 40px);
+      font-size: clamp(18px, 2.8vw, 32px);
       font-family: inherit;
       font-weight: 900;
       cursor: pointer;
@@ -408,12 +404,12 @@
     }
     .key-btn:hover  { background: rgba(255,255,255,0.24); transform: scale(1.08); }
     .key-btn:active { transform: scale(0.93); }
-    .key-btn.key-del { background: rgba(255,80,0,0.25); border-color: rgba(255,80,0,0.5); font-size: clamp(16px, 2.5vw, 28px); }
+    .key-btn.key-del { background: rgba(255,80,0,0.25); border-color: rgba(255,80,0,0.5); font-size: clamp(14px, 2vw, 24px); }
     .key-btn.key-zero { grid-column: 2; }
 
     #jump-btn, #jump-btn-boss {
-      padding: clamp(10px, 1.5vh, 16px) clamp(30px, 5vw, 60px);
-      font-size: clamp(18px, 2.8vw, 32px);
+      padding: clamp(8px, 1.2vh, 14px) clamp(24px, 4vw, 50px);
+      font-size: clamp(16px, 2.4vw, 28px);
       font-family: inherit;
       background: linear-gradient(135deg, #FF8800, #FF4400);
       color: #fff;
@@ -425,6 +421,82 @@
     }
     #jump-btn:hover, #jump-btn-boss:hover   { transform: scale(1.07) translateY(-2px); }
     #jump-btn:active, #jump-btn-boss:active { transform: scale(0.96); }
+
+    /* L3 flanking trees */
+    .keypad-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      flex-shrink: 0;
+      width: clamp(70px, 12vw, 130px);
+    }
+    .keypad-tree img.tree-img {
+      width: 100%;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+    }
+    .keypad-tree .tree-num {
+      font-size: clamp(18px, 2.8vw, 32px);
+      color: #fff;
+      font-weight: 900;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.6);
+      border-radius: 8px;
+      padding: 2px 10px;
+      margin-top: 4px;
+    }
+    .keypad-tree.start-tree .tree-num { color: var(--gold); }
+    .keypad-tree.start-tree {
+      border: 3px solid var(--gold);
+      border-radius: 12px;
+      padding: 4px 4px 0;
+      background: rgba(255,215,0,0.1);
+      box-shadow: 0 0 18px rgba(255,215,0,0.4);
+    }
+    .keypad-tree.dest-tree .tree-num { color: #88CC88; }
+    .keypad-tree.dest-tree {
+      border: 3px solid rgba(136,204,136,0.5);
+      border-radius: 12px;
+      padding: 4px 4px 0;
+      background: rgba(68,255,136,0.08);
+    }
+
+    .keypad-tree .tree-ape {
+      position: absolute;
+      bottom: 85%;
+      left: 50%;
+      transform: translateX(-50%);
+      height: clamp(55px, 10vw, 100px);
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+      pointer-events: none;
+      z-index: 3;
+      transition: opacity 0.2s;
+    }
+
+    #keypad-flying-ape {
+      position: absolute;
+      height: clamp(55px, 10vw, 100px);
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+    }
+
+    @keyframes keypadApeFall {
+      0%   { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; }
+      15%  { transform: translateX(-50%) translateY(10px) rotate(8deg); }
+      50%  { transform: translateX(-50%) translateY(100px) rotate(20deg); opacity: 0.15; }
+      70%  { transform: translateX(-50%) translateY(100px) rotate(15deg); opacity: 0.15; }
+      100% { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; }
+    }
+    .keypad-tree .tree-ape.falling { animation: keypadApeFall 0.9s ease-in-out; }
+
+    .keypad-tree.correct-flash {
+      animation: slotCorrect 0.55s ease-in-out 2;
+    }
+    .keypad-tree.wrong-shake {
+      animation: slotWrong 0.45s ease-in-out;
+    }
 
     /* ===== BANANA SCREEN ===== */
     #banana-screen {
@@ -701,6 +773,14 @@
       pointer-events: none;
     }
 
+    /* Compact Kong row when keypad is also visible (L3 boss) */
+    #boss-area.boss-keypad-mode #kong-tree-row-wrap .tree-ape.kong-ape {
+      height: clamp(40px, 7vw, 70px);
+    }
+    #boss-area.boss-keypad-mode #kong-tree-row-wrap .tree-num {
+      font-size: clamp(10px, 1.4vw, 16px);
+    }
+
     /* Boss middle section */
     #boss-middle {
       width: 100%;
@@ -732,14 +812,26 @@
 
     #boss-keypad-wrap {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: clamp(6px, 1.2vh, 14px);
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: center;
+      gap: clamp(6px, 1.2vw, 16px);
+      width: 100%;
+      position: relative;
+    }
+    #boss-keypad-wrap .keypad-tree {
+      width: clamp(55px, 9vw, 100px);
+    }
+    #boss-keypad-wrap .keypad-tree .tree-ape {
+      height: clamp(40px, 7vw, 75px);
+    }
+    #boss-keypad-wrap .keypad-tree .tree-num {
+      font-size: clamp(14px, 2vw, 24px);
     }
     #boss-keypad-display {
-      font-size: clamp(32px, 6vw, 70px);
+      font-size: clamp(26px, 4.5vw, 56px);
       color: var(--gold);
-      min-width: clamp(55px, 9vw, 110px);
+      min-width: clamp(45px, 7vw, 90px);
       text-align: center;
       background: rgba(0,0,0,0.6);
       border-radius: 12px;
@@ -772,6 +864,24 @@
       color: #CCE8CC;
       text-align: center;
       line-height: 1.4;
+    }
+    .ape-fact {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,215,0,0.25);
+      border-radius: 14px;
+      padding: clamp(10px, 1.5vh, 16px) clamp(14px, 2.5vw, 24px);
+      font-size: clamp(12px, 1.7vw, 19px);
+      color: #EEDDAA;
+      text-align: center;
+      line-height: 1.4;
+      max-width: 520px;
+      font-family: 'Nunito', 'Comic Sans MS', sans-serif;
+    }
+    .ape-fact-label {
+      font-family: 'Frijole', cursive;
+      color: var(--gold);
+      font-size: clamp(11px, 1.4vw, 16px);
+      margin-bottom: 4px;
     }
     .result-btns {
       display: flex;
@@ -824,7 +934,7 @@
   <div class="game-title">
     <div class="title-main">The Great</div>
     <div class="title-main">Banana Heist</div>
-    <div class="title-sub">Count on to catch King Kong!</div>
+    <div class="title-sub">Count on & back to catch King Kong!</div>
   </div>
 
   <div class="level-label">Choose Your Ape</div>
@@ -835,21 +945,21 @@
         <img src="assets/chimpanzee-idle.png" alt="Chimp">
       </div>
       <div class="level-name">CHIMP</div>
-      <div class="level-range">Count on 1–5</div>
+      <div class="level-range">Count on & back 1–5</div>
     </div>
     <div class="level-btn" data-level="2" onclick="selectLevel(2)">
       <div class="level-circle">
         <img src="assets/orangutan-idle.png" alt="Orangutan">
       </div>
       <div class="level-name">ORANGUTAN</div>
-      <div class="level-range">Count on 1–9</div>
+      <div class="level-range">Count on & back 1–9</div>
     </div>
     <div class="level-btn" data-level="3" onclick="selectLevel(3)">
       <div class="level-circle">
         <img src="assets/gorilla-idle.png" alt="Gorilla">
       </div>
       <div class="level-name">GORILLA</div>
-      <div class="level-range">Count on 1–9</div>
+      <div class="level-range">Count on & back 1–9</div>
     </div>
   </div>
 
@@ -869,7 +979,6 @@
 
   <div id="game-area">
     <div id="prompt-area">
-      <img id="ape-img" src="assets/chimpanzee-idle.png" alt="Ape">
       <div id="prompt-text">Count on <span class="hop-num" id="hop-display">?</span>!</div>
     </div>
 
@@ -881,24 +990,44 @@
     <!-- Flying ape for hop animation -->
     <img id="flying-ape" src="" alt="">
 
-    <!-- L3 Keypad -->
+    <!-- L3 Keypad with flanking trees -->
     <div id="keypad-wrap" style="display:none;">
-      <div id="keypad-display">?</div>
-      <div class="keypad-grid">
-        <button class="key-btn" onclick="keypadDigit('7')">7</button>
-        <button class="key-btn" onclick="keypadDigit('8')">8</button>
-        <button class="key-btn" onclick="keypadDigit('9')">9</button>
-        <button class="key-btn" onclick="keypadDigit('4')">4</button>
-        <button class="key-btn" onclick="keypadDigit('5')">5</button>
-        <button class="key-btn" onclick="keypadDigit('6')">6</button>
-        <button class="key-btn" onclick="keypadDigit('1')">1</button>
-        <button class="key-btn" onclick="keypadDigit('2')">2</button>
-        <button class="key-btn" onclick="keypadDigit('3')">3</button>
-        <button class="key-btn key-del" onclick="keypadDel()">⌫</button>
-        <button class="key-btn key-zero" onclick="keypadDigit('0')">0</button>
+      <!-- Start tree (left) -->
+      <div id="keypad-start-tree" class="keypad-tree start-tree">
+        <img class="tree-img" src="assets/tree-1.png" alt="Start Tree">
+        <div class="tree-num" id="keypad-start-num">1</div>
+        <img class="tree-ape" id="keypad-ape" src="assets/gorilla-idle.png" alt="Gorilla">
       </div>
-      <button id="jump-btn" onclick="keypadSubmit()">JUMP! →</button>
+
+      <!-- Keypad center -->
+      <div class="keypad-center">
+        <div id="keypad-display">?</div>
+        <div class="keypad-grid">
+          <button class="key-btn" onclick="keypadDigit('7')">7</button>
+          <button class="key-btn" onclick="keypadDigit('8')">8</button>
+          <button class="key-btn" onclick="keypadDigit('9')">9</button>
+          <button class="key-btn" onclick="keypadDigit('4')">4</button>
+          <button class="key-btn" onclick="keypadDigit('5')">5</button>
+          <button class="key-btn" onclick="keypadDigit('6')">6</button>
+          <button class="key-btn" onclick="keypadDigit('1')">1</button>
+          <button class="key-btn" onclick="keypadDigit('2')">2</button>
+          <button class="key-btn" onclick="keypadDigit('3')">3</button>
+          <button class="key-btn key-del" onclick="keypadDel()">⌫</button>
+          <button class="key-btn key-zero" onclick="keypadDigit('0')">0</button>
+        </div>
+        <button id="jump-btn" onclick="keypadSubmit()">JUMP! →</button>
+      </div>
+
+      <!-- Destination tree (right) -->
+      <div id="keypad-dest-tree" class="keypad-tree dest-tree">
+        <img class="tree-img" src="assets/tree-3.png" alt="Destination Tree">
+        <div class="tree-num" id="keypad-dest-num">?</div>
+      </div>
+
     </div>
+
+    <!-- Flying ape for L3 hop animation (must be in game-area, not keypad-wrap, for correct positioning) -->
+    <img id="keypad-flying-ape" src="" alt="">
   </div>
 
   <div id="hint-bar" class="hidden"></div>
@@ -934,7 +1063,7 @@
 
   <div id="boss-area">
     <!-- Kong's tree row (top) -->
-    <div class="boss-row-header">
+    <div class="boss-row-header" id="kong-row-header">
       <span class="boss-row-tag kong-tag">KONG</span>
       <span class="boss-row-pos">Tree <span id="kong-pos-num">1</span></span>
     </div>
@@ -945,11 +1074,11 @@
     <!-- Middle: question + progress -->
     <div id="boss-middle">
       <div id="boss-progress">Race to tree <span id="boss-finish-num">10</span>!</div>
-      <div id="boss-question">Count on <span class="hop-num" id="boss-hop-display">?</span> from tree <span class="hop-num" id="boss-start-display">?</span>!</div>
+      <div id="boss-question">Count on <span class="hop-num" id="boss-hop-display">?</span> from <span class="hop-num" id="boss-start-display">?</span>!</div>
     </div>
 
     <!-- Player's tree row (bottom) -->
-    <div class="boss-row-header">
+    <div class="boss-row-header" id="player-row-header">
       <span class="boss-row-tag player-tag" id="boss-player-tag">YOU</span>
       <span class="boss-row-pos">Tree <span id="player-pos-num">1</span></span>
     </div>
@@ -960,24 +1089,44 @@
     <!-- Flying ape for boss hop animation -->
     <img id="boss-flying-ape" src="" alt="" style="position:absolute;display:none;pointer-events:none;z-index:10;height:clamp(50px,9vw,90px);filter:drop-shadow(0 4px 10px rgba(0,0,0,0.7));">
 
-    <!-- Boss keypad (L3 only) -->
+    <!-- Boss keypad (L3 only) with flanking trees -->
     <div id="boss-keypad-wrap" style="display:none;">
-      <div id="boss-keypad-display">?</div>
-      <div class="keypad-grid">
-        <button class="key-btn" onclick="bossKeypadDigit('7')">7</button>
-        <button class="key-btn" onclick="bossKeypadDigit('8')">8</button>
-        <button class="key-btn" onclick="bossKeypadDigit('9')">9</button>
-        <button class="key-btn" onclick="bossKeypadDigit('4')">4</button>
-        <button class="key-btn" onclick="bossKeypadDigit('5')">5</button>
-        <button class="key-btn" onclick="bossKeypadDigit('6')">6</button>
-        <button class="key-btn" onclick="bossKeypadDigit('1')">1</button>
-        <button class="key-btn" onclick="bossKeypadDigit('2')">2</button>
-        <button class="key-btn" onclick="bossKeypadDigit('3')">3</button>
-        <button class="key-btn key-del" onclick="bossKeypadDel()">⌫</button>
-        <button class="key-btn key-zero" onclick="bossKeypadDigit('0')">0</button>
+      <!-- Start tree (left) -->
+      <div id="boss-keypad-start-tree" class="keypad-tree start-tree">
+        <img class="tree-img" src="assets/tree-1.png" alt="Start Tree">
+        <div class="tree-num" id="boss-keypad-start-num">1</div>
+        <img class="tree-ape" id="boss-keypad-ape" src="assets/gorilla-idle.png" alt="Gorilla">
       </div>
-      <button id="jump-btn-boss" onclick="bossKeypadSubmit()">JUMP! →</button>
+
+      <!-- Keypad center -->
+      <div class="keypad-center">
+        <div id="boss-keypad-display">?</div>
+        <div class="keypad-grid">
+          <button class="key-btn" onclick="bossKeypadDigit('7')">7</button>
+          <button class="key-btn" onclick="bossKeypadDigit('8')">8</button>
+          <button class="key-btn" onclick="bossKeypadDigit('9')">9</button>
+          <button class="key-btn" onclick="bossKeypadDigit('4')">4</button>
+          <button class="key-btn" onclick="bossKeypadDigit('5')">5</button>
+          <button class="key-btn" onclick="bossKeypadDigit('6')">6</button>
+          <button class="key-btn" onclick="bossKeypadDigit('1')">1</button>
+          <button class="key-btn" onclick="bossKeypadDigit('2')">2</button>
+          <button class="key-btn" onclick="bossKeypadDigit('3')">3</button>
+          <button class="key-btn key-del" onclick="bossKeypadDel()">⌫</button>
+          <button class="key-btn key-zero" onclick="bossKeypadDigit('0')">0</button>
+        </div>
+        <button id="jump-btn-boss" onclick="bossKeypadSubmit()">JUMP! →</button>
+      </div>
+
+      <!-- Destination tree (right) -->
+      <div id="boss-keypad-dest-tree" class="keypad-tree dest-tree">
+        <img class="tree-img" src="assets/tree-3.png" alt="Destination Tree">
+        <div class="tree-num" id="boss-keypad-dest-num">?</div>
+      </div>
+
     </div>
+
+    <!-- Flying ape for boss L3 hop animation (must be in boss-area for correct positioning) -->
+    <img id="boss-keypad-flying-ape" src="" alt="" style="position:absolute;display:none;pointer-events:none;z-index:10;height:clamp(55px,10vw,100px);filter:drop-shadow(0 4px 10px rgba(0,0,0,0.7));">
   </div>
 </div>
 
@@ -999,6 +1148,7 @@
     <div class="result-title" id="result-title">You got the bananas!</div>
     <img class="result-img" id="result-img" src="" alt="">
     <div class="result-msg" id="result-msg"></div>
+    <div class="ape-fact" id="ape-fact"></div>
     <div class="result-btns">
       <button class="btn btn-primary"   onclick="playAgain()">Play Again!</button>
       <button class="btn btn-secondary" onclick="goHome()">Home</button>
@@ -1019,6 +1169,7 @@ const G = {
   roundMisses:  0,
   firstTry:     true,
   roundResults: [],   // 'clean' | 'miss' per round
+  isCountBack:  false,
   interacting:  true,
   keypadInput:  '',
   // boss
@@ -1029,6 +1180,7 @@ const G = {
   bossFirstTry:    true,
   kongStart:       1,
   kongViewStart:   1,
+  bossIsCountBack: false,
   bossInput:       '',
   bossInteracting: true,
   playerWon:       false,
@@ -1040,7 +1192,7 @@ const BOSS_FINISH = 10;
 const LEVEL_CFG = {
   1: { char: 'chimpanzee', label: 'Chimp',     treeCount: 10, maxHop: 5, startMin: 1,  startMax: 1  },
   2: { char: 'orangutan',  label: 'Orangutan', treeCount: 10, maxHop: 9, startMin: 1,  startMax: 1  },
-  3: { char: 'gorilla',    label: 'Gorilla',   treeCount: 0,  maxHop: 9, startMin: 2,  startMax: 15 },
+  3: { char: 'gorilla',    label: 'Gorilla',   treeCount: 0,  maxHop: 9, startMin: 1,  startMax: 1  },
 };
 
 const TREE_IMGS = [
@@ -1049,6 +1201,7 @@ const TREE_IMGS = [
   'assets/tree-3.png',
   'assets/tree-4.png',
 ];
+function treeImg(num) { return TREE_IMGS[((num % 4) + 4) % 4]; }
 
 // ============================= AUDIO =============================
 function mkAudio(src) {
@@ -1120,11 +1273,9 @@ function startGame() {
   G.roundMisses  = 0;
   G.firstTry     = true;
   G.roundResults = [];
+  G.isCountBack  = false;
   G.interacting  = true;
   G.keypadInput  = '';
-
-  // Set ape image throughout
-  document.getElementById('ape-img').src = `assets/${cfg.char}-idle.png`;
 
   // Show/hide tree row vs keypad
   const isKeypad = cfg.treeCount === 0;
@@ -1166,7 +1317,16 @@ function generateQuestion() {
   }
   const hop   = 1 + Math.floor(Math.random() * cfg.maxHop);
   G.hopCount   = hop;
-  G.targetTree = G.startTree + hop;
+
+  // 50% chance of count-back, but only if startTree - hop >= 0
+  if (Math.random() < 0.5 && G.startTree - hop >= 0) {
+    G.isCountBack = true;
+    G.targetTree  = G.startTree - hop;
+  } else {
+    G.isCountBack = false;
+    G.targetTree  = G.startTree + hop;
+  }
+
   G.roundMisses  = 0;
   G.firstTry     = true;
   G.interacting  = true;
@@ -1178,15 +1338,35 @@ function nextRound() {
   generateQuestion();
   updateHUD();
 
-  document.getElementById('prompt-text').innerHTML =
-    `Count on <span class="hop-num">${G.hopCount}</span> from tree <span class="hop-num">${G.startTree}</span>!`;
+  // Randomly alternate between word phrasing and equation format
+  if (G.isCountBack) {
+    if (Math.random() < 0.5) {
+      document.getElementById('prompt-text').innerHTML =
+        `Count back <span class="hop-num">${G.hopCount}</span> from <span class="hop-num">${G.startTree}</span>!`;
+    } else {
+      document.getElementById('prompt-text').innerHTML =
+        `<span class="hop-num">${G.startTree}</span> &minus; <span class="hop-num">${G.hopCount}</span> = ?`;
+    }
+  } else {
+    if (Math.random() < 0.5) {
+      document.getElementById('prompt-text').innerHTML =
+        `Count on <span class="hop-num">${G.hopCount}</span> from <span class="hop-num">${G.startTree}</span>!`;
+    } else {
+      document.getElementById('prompt-text').innerHTML =
+        `<span class="hop-num">${G.startTree}</span> + <span class="hop-num">${G.hopCount}</span> = ?`;
+    }
+  }
 
   const cfg = LEVEL_CFG[G.level];
   if (cfg.treeCount > 0) {
+    // Ensure both startTree and targetTree are visible
+    const lo = Math.min(G.startTree, G.targetTree);
+    const hi = Math.max(G.startTree, G.targetTree);
     const viewEnd = G.viewStart + cfg.treeCount - 1;
-    if (G.targetTree > viewEnd) {
-      // Scroll so startTree becomes leftmost, then render
-      scrollTrees(G.startTree, () => renderTrees());
+    if (hi > viewEnd || lo < G.viewStart) {
+      // Snap viewStart so both fit
+      G.viewStart = Math.max(0, hi - cfg.treeCount + 1);
+      renderTrees();
     } else {
       renderTrees();
     }
@@ -1220,7 +1400,7 @@ function renderTrees() {
 
     const treeImg = document.createElement('img');
     treeImg.className = 'tree-img';
-    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.src = treeImg(num);
     treeImg.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
@@ -1238,8 +1418,8 @@ function renderTrees() {
       apeEl.src = `assets/${cfg.char}-idle.png`;
       apeEl.alt = 'Ape';
       slot.appendChild(apeEl);
-    } else if (num > G.startTree) {
-      // Only trees after the start tree are clickable
+    } else if (G.isCountBack ? num < G.startTree : num > G.startTree) {
+      // Trees in the hop direction are clickable
       slot.onclick = () => onTreeClick(num);
     }
 
@@ -1297,7 +1477,7 @@ function scrollTrees(newViewStart, callback) {
 
     const treeImg = document.createElement('img');
     treeImg.className = 'tree-img';
-    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.src = treeImg(num);
     treeImg.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
@@ -1369,11 +1549,18 @@ function handleCorrect(num) {
 
   const gameArea = document.getElementById('game-area');
 
-  // Hop tree by tree: startTree → startTree+1 → ... → targetTree
+  // Hop tree by tree (forward or backward depending on direction)
   const hops = [];
-  for (let t = G.startTree; t <= G.targetTree; t++) {
-    const idx = t - G.viewStart;
-    if (slots[idx]) hops.push(slots[idx]);
+  if (G.isCountBack) {
+    for (let t = G.startTree; t >= G.targetTree; t--) {
+      const idx = t - G.viewStart;
+      if (slots[idx]) hops.push(slots[idx]);
+    }
+  } else {
+    for (let t = G.startTree; t <= G.targetTree; t++) {
+      const idx = t - G.viewStart;
+      if (slots[idx]) hops.push(slots[idx]);
+    }
   }
 
   let hopIdx = 0;
@@ -1485,22 +1672,17 @@ function handleWrong(num) {
     }, 900);
   }
 
-  // Prompt ape shake + fall pose
-  const apeImg = document.getElementById('ape-img');
-  apeImg.src = `assets/${LEVEL_CFG[G.level].char}-fall.png`;
-  apeImg.classList.remove('shaking');
-  void apeImg.offsetWidth;
-  apeImg.classList.add('shaking');
-
   setTimeout(() => {
     clickedSlot.classList.remove('wrong-flash');
-    apeImg.classList.remove('shaking');
-    apeImg.src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
     G.interacting = true;
   }, 1000);
 
   if (G.roundMisses >= 2) {
-    showHintBar(`Try counting on your fingers from ${G.startTree}!`);
+    if (G.isCountBack) {
+      showHintBar(`Try counting back on your fingers from ${G.startTree}!`);
+    } else {
+      showHintBar(`Try counting on your fingers from ${G.startTree}!`);
+    }
   }
 }
 
@@ -1520,6 +1702,30 @@ function finishRound() {
 function renderKeypadQuestion() {
   document.getElementById('keypad-display').textContent = '?';
   G.keypadInput = '';
+
+  // Set start tree number and image
+  const startNum = document.getElementById('keypad-start-num');
+  startNum.textContent = G.startTree;
+  document.getElementById('keypad-start-tree').querySelector('.tree-img').src =
+    treeImg(G.startTree);
+
+  // Set destination tree image (different from start)
+  document.getElementById('keypad-dest-tree').querySelector('.tree-img').src =
+    treeImg(G.targetTree);
+  document.getElementById('keypad-dest-num').textContent = '?';
+
+  // Remove any leftover landed ape from dest tree
+  const destLanded = document.getElementById('keypad-dest-tree').querySelector('.tree-ape');
+  if (destLanded) destLanded.remove();
+
+  // Reset gorilla on start tree
+  const ape = document.getElementById('keypad-ape');
+  ape.src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
+  ape.style.opacity = '1';
+  ape.classList.remove('falling');
+
+  // Hide flying ape
+  document.getElementById('keypad-flying-ape').style.display = 'none';
 }
 
 function keypadDigit(d) {
@@ -1548,14 +1754,72 @@ function keypadSubmit() {
 }
 
 function keypadCorrect() {
-  play('whoosh');
-  setTimeout(() => play('correct'), 300);
-  document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-jump.png`;
+  const cfg = LEVEL_CFG[G.level];
+  const startTree = document.getElementById('keypad-start-tree');
+  const destTree  = document.getElementById('keypad-dest-tree');
+  const ape       = document.getElementById('keypad-ape');
+  const flyingApe = document.getElementById('keypad-flying-ape');
+  const gameArea  = document.getElementById('game-area');
+
+  // Show correct answer on display and dest tree
   document.getElementById('keypad-display').textContent = G.targetTree;
-  setTimeout(() => {
-    document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
-    finishRound();
-  }, 900);
+  document.getElementById('keypad-dest-num').textContent = G.targetTree;
+
+  // Hide ape on start tree, show flying ape
+  ape.style.opacity = '0';
+  flyingApe.src = `assets/${cfg.char}-jump.png`;
+  flyingApe.style.display = 'block';
+
+  const areaRect  = gameArea.getBoundingClientRect();
+  const startRect = startTree.getBoundingClientRect();
+  const destRect  = destTree.getBoundingClientRect();
+
+  const sx = startRect.left + startRect.width / 2 - areaRect.left;
+  const sy = startRect.top - areaRect.top - 10;
+  const ex = destRect.left + destRect.width / 2 - areaRect.left;
+  const ey = destRect.top - areaRect.top - 10;
+
+  flyingApe.style.left = sx + 'px';
+  flyingApe.style.top  = sy + 'px';
+  flyingApe.style.transform = 'translateX(-50%)';
+
+  play('whoosh');
+
+  const duration = 500;
+  const arcH = -100;
+  const t0 = performance.now();
+
+  function tick(now) {
+    const t = Math.min((now - t0) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 2);
+    const x = sx + (ex - sx) * ease;
+    const arcY = arcH * 4 * t * (1 - t);
+    const y = sy + (ey - sy) * ease + arcY;
+    flyingApe.style.left = x + 'px';
+    flyingApe.style.top  = y + 'px';
+
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      // Landed on destination tree
+      play('correct');
+      flyingApe.style.display = 'none';
+
+      // Show gorilla on dest tree
+      const landedApe = document.createElement('img');
+      landedApe.className = 'tree-ape';
+      landedApe.src = `assets/${cfg.char}-idle.png`;
+      landedApe.alt = 'Ape';
+      destTree.appendChild(landedApe);
+
+      destTree.classList.add('correct-flash');
+      setTimeout(() => destTree.classList.remove('correct-flash'), 1000);
+
+      setTimeout(() => finishRound(), 500);
+    }
+  }
+
+  requestAnimationFrame(tick);
 }
 
 function keypadWrong() {
@@ -1565,16 +1829,36 @@ function keypadWrong() {
   play('ouch');
   updateHUD();
 
-  document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-fall.png`;
+  const cfg = LEVEL_CFG[G.level];
+
+  // Gorilla falls from start tree
+  const ape = document.getElementById('keypad-ape');
+  ape.src = `assets/${cfg.char}-fall.png`;
+  ape.classList.remove('falling');
+  void ape.offsetWidth;
+  ape.classList.add('falling');
+
+  // Shake the start tree
+  const startTree = document.getElementById('keypad-start-tree');
+  startTree.classList.remove('wrong-shake');
+  void startTree.offsetWidth;
+  startTree.classList.add('wrong-shake');
+
   document.getElementById('keypad-display').textContent = '?';
   G.keypadInput = '';
 
   if (G.roundMisses >= 2) {
-    showHintBar(`${G.startTree} + ${G.hopCount} = ? Count on your fingers!`);
+    if (G.isCountBack) {
+      showHintBar(`${G.startTree} − ${G.hopCount} = ? Count back on your fingers!`);
+    } else {
+      showHintBar(`${G.startTree} + ${G.hopCount} = ? Count on your fingers!`);
+    }
   }
 
   setTimeout(() => {
-    document.getElementById('ape-img').src = `assets/${LEVEL_CFG[G.level].char}-idle.png`;
+    ape.classList.remove('falling');
+    ape.src = `assets/${cfg.char}-idle.png`;
+    startTree.classList.remove('wrong-shake');
     G.interacting = true;
   }, 900);
 }
@@ -1615,9 +1899,22 @@ function showBossCutscene() {
     kongImg.classList.add('entered');
   }, 400);
 
+  const BOSS_INTRO_LINES = [
+    "ROOOAR! You found my bananas?! Let's race — winner takes ALL!",
+    "HEY! Those bananas belong to ME! Think you can outcount the KING?!",
+    "Well well well... a little ape with MY bananas! Let's settle this with a RACE!",
+    "GRRRR! Nobody steals from King Kong! Race me or give them back!",
+    "You think you're so smart?! Prove it — first one to tree 10 keeps the bananas!",
+    "ROOOAR! I've been guarding those bananas for YEARS! You want them? EARN them!",
+    "Ha! A tiny ape thinks it can beat ME?! Let's race and find out!",
+    "Oh no you DON'T! Those are MY bananas! Count faster than me or ELSE!",
+    "SURPRISE! Did you really think I'd let you just TAKE my bananas?! RACE TIME!",
+    "You've got guts, little ape! But I've got BIGGER guts! And faster counting! LET'S GO!",
+  ];
+
   setTimeout(() => {
     speakerEl.classList.add('visible');
-    textEl.textContent = 'ROOOAR! You found my bananas?! Let\'s race — winner takes ALL!';
+    textEl.textContent = BOSS_INTRO_LINES[Math.floor(Math.random() * BOSS_INTRO_LINES.length)];
     tapEl.classList.add('visible');
   }, 1200);
 }
@@ -1635,6 +1932,7 @@ function startBossRace() {
   G.bossFirstTry   = true;
   G.kongStart      = 1;
   G.kongViewStart  = 1;
+  G.bossIsCountBack = false;
   G.bossInput      = '';
   G.bossInteracting = true;
 
@@ -1645,15 +1943,19 @@ function startBossRace() {
   document.getElementById('boss-finish-num').textContent = BOSS_FINISH;
 
   // Show tree rows or keypad based on level
-  document.getElementById('kong-tree-row-wrap').style.display    = isKeypad ? 'none' : 'flex';
+  // Kong's row is always visible; player's row is replaced by keypad in L3
+  document.getElementById('kong-tree-row-wrap').style.display    = 'flex';
+  document.getElementById('kong-row-header').style.display       = 'flex';
   document.getElementById('boss-tree-row-wrap').style.display    = isKeypad ? 'none' : 'flex';
+  document.getElementById('player-row-header').style.display     = isKeypad ? 'none' : 'flex';
   document.getElementById('boss-keypad-wrap').style.display      = isKeypad ? 'flex' : 'none';
-  // Hide row headers for keypad levels
-  const headers = document.querySelectorAll('#boss-area .boss-row-header');
-  headers.forEach(h => h.style.display = isKeypad ? 'none' : 'flex');
+
+  const bossArea = document.getElementById('boss-area');
+  bossArea.classList.toggle('boss-keypad-mode', isKeypad);
 
   updateBossPositions();
   showScreen('boss-screen');
+  renderKongTrees();
 
   setTimeout(nextBossQuestion, 600);
 }
@@ -1668,13 +1970,33 @@ function nextBossQuestion() {
   const maxPossible = Math.min(cfg.maxHop, BOSS_FINISH - G.bossStart);
   const hop = 1 + Math.floor(Math.random() * maxPossible);
   G.bossHop      = hop;
-  G.bossTarget   = G.bossStart + hop;
+  G.bossTarget   = G.bossStart + hop;  // movement is always forward
   G.bossFirstTry = true;
   G.bossInput    = '';
   G.bossInteracting = true;
 
-  document.getElementById('boss-question').innerHTML =
-    `Count on <span class="hop-num">${hop}</span> from tree <span class="hop-num">${G.bossStart}</span>!`;
+  // 50% chance of subtraction question (math only — movement stays forward)
+  G.bossIsCountBack = Math.random() < 0.5;
+
+  if (G.bossIsCountBack) {
+    // Subtraction: "subFrom − hop = target" where subFrom = target + hop
+    const subFrom = G.bossTarget + hop;
+    if (Math.random() < 0.5) {
+      document.getElementById('boss-question').innerHTML =
+        `Count back <span class="hop-num">${hop}</span> from <span class="hop-num">${subFrom}</span>!`;
+    } else {
+      document.getElementById('boss-question').innerHTML =
+        `<span class="hop-num">${subFrom}</span> &minus; <span class="hop-num">${hop}</span> = ?`;
+    }
+  } else {
+    if (Math.random() < 0.5) {
+      document.getElementById('boss-question').innerHTML =
+        `Count on <span class="hop-num">${hop}</span> from <span class="hop-num">${G.bossStart}</span>!`;
+    } else {
+      document.getElementById('boss-question').innerHTML =
+        `<span class="hop-num">${G.bossStart}</span> + <span class="hop-num">${hop}</span> = ?`;
+    }
+  }
 
   if (cfg.treeCount > 0) {
     // Check if player's target is beyond visible area
@@ -1699,6 +2021,24 @@ function nextBossQuestion() {
     }
   } else {
     document.getElementById('boss-keypad-display').textContent = '?';
+    // Update boss keypad flanking trees
+    const cfg2 = LEVEL_CFG[G.level];
+    document.getElementById('boss-keypad-start-num').textContent = G.bossStart;
+    document.getElementById('boss-keypad-start-tree').querySelector('.tree-img').src =
+      treeImg(G.bossStart);
+    document.getElementById('boss-keypad-dest-tree').querySelector('.tree-img').src =
+      treeImg(G.bossTarget);
+    document.getElementById('boss-keypad-dest-num').textContent = '?';
+    // Reset ape on start tree
+    const bossApe = document.getElementById('boss-keypad-ape');
+    bossApe.src = `assets/${cfg2.char}-idle.png`;
+    bossApe.style.opacity = '1';
+    bossApe.classList.remove('falling');
+    document.getElementById('boss-keypad-flying-ape').style.display = 'none';
+    // Remove any landed ape from dest tree
+    const destLanded = document.getElementById('boss-keypad-dest-tree').querySelector('.tree-ape');
+    if (destLanded) destLanded.remove();
+    renderKongTrees();
   }
 
   updateBossPositions();
@@ -1725,7 +2065,7 @@ function renderBossTrees() {
 
     const treeImg = document.createElement('img');
     treeImg.className = 'tree-img';
-    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.src = treeImg(num);
     treeImg.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
@@ -1762,7 +2102,7 @@ function renderBossTrees() {
 
 function renderKongTrees() {
   const cfg   = LEVEL_CFG[G.level];
-  const count = cfg.treeCount;
+  const count = cfg.treeCount || BOSS_FINISH;
   const row   = document.getElementById('kong-tree-row');
   row.innerHTML = '';
   row.style.transition = 'none';
@@ -1777,7 +2117,7 @@ function renderKongTrees() {
 
     const treeImg = document.createElement('img');
     treeImg.className = 'tree-img';
-    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.src = treeImg(num);
     treeImg.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
@@ -1814,7 +2154,7 @@ function renderKongTrees() {
 // ============================= BOSS SCROLL =======================
 function scrollBossTreeRow(rowId, wrapId, viewStartKey, newViewStart, callback) {
   const cfg = LEVEL_CFG[G.level];
-  const count = cfg.treeCount;
+  const count = cfg.treeCount || BOSS_FINISH;
   const oldViewStart = G[viewStartKey];
   const scrollCount = newViewStart - oldViewStart;
 
@@ -1845,7 +2185,7 @@ function scrollBossTreeRow(rowId, wrapId, viewStartKey, newViewStart, callback) 
 
     const treeImg = document.createElement('img');
     treeImg.className = 'tree-img';
-    treeImg.src = TREE_IMGS[(num - 1) % 4];
+    treeImg.src = treeImg(num);
 
     const numEl = document.createElement('div');
     numEl.className = 'tree-num';
@@ -1896,18 +2236,15 @@ function advanceKong(amount, callback) {
   G.kongStart = Math.min(G.kongStart + amount, BOSS_FINISH);
   updateBossPositions();
 
-  if (cfg.treeCount > 0) {
-    const kongViewEnd = G.kongViewStart + cfg.treeCount - 1;
-    if (G.kongStart > kongViewEnd) {
-      scrollBossTreeRow('kong-tree-row', 'kong-tree-row-wrap', 'kongViewStart', G.kongStart, () => {
-        renderKongTrees();
-        if (callback) callback();
-      });
-    } else {
+  const kongTreeCount = cfg.treeCount || BOSS_FINISH;
+  const kongViewEnd = G.kongViewStart + kongTreeCount - 1;
+  if (G.kongStart > kongViewEnd) {
+    scrollBossTreeRow('kong-tree-row', 'kong-tree-row-wrap', 'kongViewStart', G.kongStart, () => {
       renderKongTrees();
       if (callback) callback();
-    }
+    });
   } else {
+    renderKongTrees();
     if (callback) callback();
   }
 }
@@ -2067,42 +2404,71 @@ function bossHandleAnswer(correct) {
   const cfg = LEVEL_CFG[G.level];
 
   if (correct) {
-    // SFX already played by hop animation for tree levels; play for keypad only
     if (cfg.treeCount === 0) {
-      play('whoosh');
-      setTimeout(() => play('correct'), 300);
-    }
-
-    // Player advances first — cap at finish line
-    G.bossStart = Math.min(G.bossTarget, BOSS_FINISH);
-    updateBossPositions();
-
-    // Check if player wins immediately
-    if (G.bossStart >= BOSS_FINISH) {
-      setTimeout(() => { G.playerWon = true; endBossRace(); }, 600);
-      return;
-    }
-
-    // Then Kong advances (only on first try — no double penalty)
-    if (G.bossFirstTry) {
-      setTimeout(() => {
-        advanceKong(G.bossHop, () => {
-          if (G.kongStart >= BOSS_FINISH) {
-            G.playerWon = false;
-            endBossRace();
-          } else {
-            setTimeout(nextBossQuestion, 400);
-          }
-        });
-      }, 800);
+      // Keypad mode — do jump animation from start tree to dest tree
+      bossKeypadJumpAnimation(() => {
+        G.bossStart = Math.min(G.bossTarget, BOSS_FINISH);
+        updateBossPositions();
+        if (G.bossStart >= BOSS_FINISH) {
+          setTimeout(() => { G.playerWon = true; endBossRace(); }, 400);
+          return;
+        }
+        if (G.bossFirstTry) {
+          setTimeout(() => {
+            advanceKong(G.bossHop, () => {
+              if (G.kongStart >= BOSS_FINISH) { G.playerWon = false; endBossRace(); }
+              else { setTimeout(nextBossQuestion, 400); }
+            });
+          }, 600);
+        } else {
+          setTimeout(nextBossQuestion, 400);
+        }
+      });
     } else {
-      // After miss retry — player advances, Kong doesn't get another bonus
-      setTimeout(nextBossQuestion, 600);
+      // Tree mode — SFX already played by hop animation
+      G.bossStart = Math.min(G.bossTarget, BOSS_FINISH);
+      updateBossPositions();
+      if (G.bossStart >= BOSS_FINISH) {
+        setTimeout(() => { G.playerWon = true; endBossRace(); }, 600);
+        return;
+      }
+      if (G.bossFirstTry) {
+        setTimeout(() => {
+          advanceKong(G.bossHop, () => {
+            if (G.kongStart >= BOSS_FINISH) { G.playerWon = false; endBossRace(); }
+            else { setTimeout(nextBossQuestion, 400); }
+          });
+        }, 800);
+      } else {
+        setTimeout(nextBossQuestion, 600);
+      }
     }
 
   } else {
-    play('ouch');
     G.bossFirstTry = false;
+
+    if (cfg.treeCount === 0) {
+      // Keypad mode — fall animation
+      play('ouch');
+      const ape = document.getElementById('boss-keypad-ape');
+      ape.src = `assets/${cfg.char}-fall.png`;
+      ape.classList.remove('falling');
+      void ape.offsetWidth;
+      ape.classList.add('falling');
+
+      const startTree = document.getElementById('boss-keypad-start-tree');
+      startTree.classList.remove('wrong-shake');
+      void startTree.offsetWidth;
+      startTree.classList.add('wrong-shake');
+
+      setTimeout(() => {
+        ape.classList.remove('falling');
+        ape.src = `assets/${cfg.char}-idle.png`;
+        startTree.classList.remove('wrong-shake');
+      }, 900);
+    } else {
+      play('ouch');
+    }
 
     // Kong advances by half the hop (min 1)
     const kongAdvance = Math.max(1, Math.floor(G.bossHop / 2));
@@ -2125,6 +2491,73 @@ function bossHandleAnswer(correct) {
   }
 }
 
+function bossKeypadJumpAnimation(callback) {
+  const cfg = LEVEL_CFG[G.level];
+  const startTree = document.getElementById('boss-keypad-start-tree');
+  const destTree  = document.getElementById('boss-keypad-dest-tree');
+  const ape       = document.getElementById('boss-keypad-ape');
+  const flyingApe = document.getElementById('boss-keypad-flying-ape');
+  const bossArea  = document.getElementById('boss-area');
+
+  // Show answer
+  document.getElementById('boss-keypad-display').textContent = G.bossTarget;
+  document.getElementById('boss-keypad-dest-num').textContent = G.bossTarget;
+
+  ape.style.opacity = '0';
+  flyingApe.src = `assets/${cfg.char}-jump.png`;
+  flyingApe.style.display = 'block';
+
+  const areaRect  = bossArea.getBoundingClientRect();
+  const startRect = startTree.getBoundingClientRect();
+  const destRect  = destTree.getBoundingClientRect();
+
+  const sx = startRect.left + startRect.width / 2 - areaRect.left;
+  const sy = startRect.top - areaRect.top - 10;
+  const ex = destRect.left + destRect.width / 2 - areaRect.left;
+  const ey = destRect.top - areaRect.top - 10;
+
+  flyingApe.style.left = sx + 'px';
+  flyingApe.style.top  = sy + 'px';
+  flyingApe.style.transform = 'translateX(-50%)';
+
+  play('whoosh');
+
+  const duration = 450;
+  const arcH = -80;
+  const t0 = performance.now();
+
+  function tick(now) {
+    const t = Math.min((now - t0) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 2);
+    const x = sx + (ex - sx) * ease;
+    const arcY = arcH * 4 * t * (1 - t);
+    const y = sy + (ey - sy) * ease + arcY;
+    flyingApe.style.left = x + 'px';
+    flyingApe.style.top  = y + 'px';
+
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      play('correct');
+      flyingApe.style.display = 'none';
+
+      // Show gorilla on dest tree
+      const landedApe = document.createElement('img');
+      landedApe.className = 'tree-ape';
+      landedApe.src = `assets/${cfg.char}-idle.png`;
+      landedApe.alt = 'Ape';
+      destTree.appendChild(landedApe);
+
+      destTree.classList.add('correct-flash');
+      setTimeout(() => destTree.classList.remove('correct-flash'), 800);
+
+      setTimeout(callback, 400);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
 // ============================= END BOSS RACE =====================
 function endBossRace() {
   stopBossMusic();
@@ -2138,6 +2571,13 @@ const KONG_WIN_LINES = [
   "Yoink! ALL the bananas! Maybe try counting on your toes too!",
   "I win I win I WIN! Mmm, these bananas are SO yummy!",
   "Nice try, little ape! But nobody beats King Kong! ROOOAR!",
+  "Mmmm! *munch munch* These bananas taste like VICTORY!",
+  "Better luck next time! I'll be here eating ALL these bananas!",
+  "Did you really think you could beat the KING?! Ha ha ha!",
+  "I'm the fastest counter in the WHOLE jungle! Nobody can stop me!",
+  "Thanks for the exercise! Now if you'll excuse me... *eats banana*",
+  "ROOOAR! King Kong ALWAYS wins! Come back when you've practiced!",
+  "Too easy! I could count on my toes with my eyes closed!",
 ];
 
 const KONG_LOSE_LINES = [
@@ -2146,6 +2586,13 @@ const KONG_LOSE_LINES = [
   "I can't believe it! I practiced counting ALL week!",
   "Nooooo! My beautiful bananas! I'm gonna go cry in my cave!",
   "You cheated! ...Okay fine, you didn't. But I'm still MAD!",
+  "This can't be happening! I'm KING KONG! Kings don't LOSE!",
+  "My bananas... my precious bananas... *sniffle*",
+  "Okay okay you win THIS time. But I'll be back! ROOOAR!",
+  "HOW?! I was counting as fast as my big fingers could go!",
+  "Fine! Take the bananas! I didn't even WANT them! ...yes I did.",
+  "You're too good! Are you secretly a math teacher or something?!",
+  "IMPOSSIBLE! I demand a recount! ...Wait, that's what got me in trouble.",
 ];
 
 function showEndCutscene() {
@@ -2195,7 +2642,7 @@ function endCutsceneAdvance() {
     document.getElementById('result-img').src = `assets/${cfg.char}-victory.png`;
     const msgs = [
       'King Kong never stood a chance!',
-      'You counted on perfectly!',
+      'You counted perfectly!',
       'What a champion ape!',
       'King Kong is SO jealous!',
     ];
@@ -2204,13 +2651,14 @@ function endCutsceneAdvance() {
     document.getElementById('result-title').textContent = 'Kong got there first!';
     document.getElementById('result-img').src = 'assets/king-kong-victory.png';
     const msgs = [
-      `${cfg.label} says: practice counting on and we'll win next time!`,
-      'So close! Count on a little faster next time.',
+      `${cfg.label} says: practice counting and we'll win next time!`,
+      'So close! Count a little faster next time.',
       'Kong got lucky. Try again!',
     ];
     document.getElementById('result-msg').textContent = msgs[Math.floor(Math.random() * msgs.length)];
   }
 
+  showApeFact();
   showScreen('result-screen');
 }
 
@@ -2251,6 +2699,71 @@ function showConfetti() {
     container.appendChild(p);
     p.addEventListener('animationend', () => p.remove());
   }
+}
+
+// ============================= APE FACTS =========================
+const APE_FACTS = {
+  1: [
+    'Chimpanzees share about 98% of their DNA with humans — they are our closest living relatives!',
+    'Chimps use sticks as tools to fish termites out of mounds. They are one of the few animals that make their own tools!',
+    'Chimpanzees laugh when they play, just like kids do! Their laugh sounds like panting.',
+    'Baby chimps ride on their mother\'s back for the first two years of their life.',
+    'Chimps can learn sign language! A chimp named Washoe learned over 250 signs.',
+    'Chimpanzees live in groups of up to 150 members called "communities."',
+    'Chimps build a brand new sleeping nest in the trees every single night!',
+    'Chimpanzees can remember things better than most humans in short-term memory tests!',
+    'Chimps greet each other with hugs, kisses, and hand-holding.',
+    'A chimpanzee\'s arms are longer than its legs — perfect for swinging through trees!',
+  ],
+  2: [
+    'Orangutans are the largest animals that live in trees. Males can weigh as much as a grown-up human!',
+    'The word "orangutan" means "person of the forest" in the Malay language.',
+    'Orangutans use big leaves as umbrellas when it rains!',
+    'Baby orangutans stay with their mothers for 6 to 8 years — longer than any other animal except humans!',
+    'Orangutans are super smart — they can figure out how to use a key to open a lock!',
+    'An orangutan\'s arm span can reach over 2 meters (7 feet) — wider than they are tall!',
+    'Orangutans eat over 400 different types of food, but their favorite is fruit — especially durian!',
+    'Male orangutans have big cheek pads called "flanges" that make their face look extra wide.',
+    'Orangutans are the only great apes found in Asia. They live on the islands of Borneo and Sumatra.',
+    'Orangutans rarely come down from the trees. They even drink water from holes in tree trunks!',
+  ],
+  3: [
+    'Gorillas are the biggest primates in the world. A male gorilla can weigh over 200 kilograms (440 pounds)!',
+    'Gorillas beat their chests to communicate — it can be heard from 1 kilometer away!',
+    'Despite their size, gorillas are gentle and mostly eat plants, leaves, and fruit.',
+    'Every gorilla has a unique nose print, just like humans have unique fingerprints!',
+    'Baby gorillas learn to walk at about 5 months old — much earlier than human babies!',
+    'A group of gorillas is called a "troop" and is led by a big male called a "silverback."',
+    'Gorillas can live to be over 40 years old in the wild!',
+    'Gorillas build nests on the ground to sleep in every night, made from leaves and branches.',
+    'A gorilla named Koko learned over 1,000 signs in sign language and could understand spoken English!',
+    'Gorillas hum and sing while they eat when they are happy with their food!',
+  ],
+};
+
+const APE_LABELS = { 1: 'Chimp', 2: 'Orangutan', 3: 'Gorilla' };
+// Shuffled bags so every fact is seen before any repeats
+const apeFactBags = { 1: [], 2: [], 3: [] };
+
+function pickRandomFact(level) {
+  if (apeFactBags[level].length === 0) {
+    // Refill and shuffle (Fisher-Yates)
+    const arr = APE_FACTS[level].map((_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    apeFactBags[level] = arr;
+  }
+  return APE_FACTS[level][apeFactBags[level].pop()];
+}
+
+function showApeFact() {
+  const el = document.getElementById('ape-fact');
+  const level = G.level;
+  const label = APE_LABELS[level];
+  const f = pickRandomFact(level);
+  el.innerHTML = `<div class="ape-fact-label">${label} Fact!</div>${f}`;
 }
 
 // ============================= INIT ==============================

@@ -112,20 +112,6 @@ Based on classroom newsletters (January–April 2026).
 
 ---
 
-## Suggested Practice Priority (most important first)
-
-1. Addition & subtraction facts within 10 (fluency goal)
-2. Doubles facts (1+1 through 6+6)
-3. Decomposing numbers 5–9 all ways
-4. Counting on / counting back strategies
-5. Word problems (choosing the operation, modeling with objects)
-6. Teen numbers (recognize, write, decompose)
-7. Comparing numbers 1–20
-8. Skip counting by 10s to 100
-9. Coin names and values
-
----
-
 ## Athar's Current Status (April 2026)
 
 **Solid:**
@@ -151,7 +137,8 @@ Concepts build on each other in this order. Mastering each one makes the next ea
 5. **Remaining addition facts within 10** — anchor to doubles and making-10 pairs to derive the rest.
 6. **Counting back** (concept + vocabulary) — mirror of step 1; same situation.
 7. **Subtraction facts within 10** — flows naturally from counting back.
-8. **Decomposing numbers all ways** — e.g., all ways to break apart 7; ties addition and subtraction together.
-9. **Teen numbers / place value** — 14 = 10 + 4; builds on all the above.
+8. **Word problems** — apply addition and subtraction to real-life stories; the new skill is choosing the operation, not computing the answer. Doable once the basic facts are in place.
+9. **Decomposing numbers all ways** — e.g., all ways to break apart 7; ties addition and subtraction together.
+10. **Teen numbers / place value** — 14 = 10 + 4; builds on all the above.
 
 **Key insight:** Counting on and counting back are the bridge between counting (which Athar has) and arithmetic (which he needs). The gap is mostly vocabulary and confidence, not underlying ability. Unlock these two first before drilling more facts.

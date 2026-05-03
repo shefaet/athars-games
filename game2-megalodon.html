@@ -279,7 +279,7 @@
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       line-height: 1.2;
     }
-    .fish-label.gold { background: rgba(255,215,0,0.95); }
+
 
     /* Fish animations */
     @keyframes swimLeft {
@@ -294,45 +294,6 @@
       80%     { transform: rotate(9deg) scale(1); }
     }
     .fish-inner.wiggle { animation: fishWiggle 0.5s ease-in-out; }
-
-    /* Dot array panel (bottom-right, Levels 1–2) */
-    #dot-panel {
-      position: absolute;
-      right: clamp(10px, 2vw, 22px);
-      bottom: clamp(56px, 10vh, 88px);
-      z-index: 9;
-      background: rgba(0,10,30,0.90);
-      border: 2px solid rgba(0,200,255,0.35);
-      border-radius: 14px;
-      padding: clamp(8px,1.2vh,14px) clamp(12px,1.8vw,20px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      min-width: 72px;
-      backdrop-filter: blur(4px);
-    }
-    #dot-panel.hidden { display: none; }
-    .dot-panel-label {
-      font-size: clamp(10px, 1.2vw, 14px);
-      color: #88CCFF;
-      font-weight: 700;
-      text-align: center;
-    }
-    .dot-array {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(2px, 0.4vw, 4px);
-      align-items: center;
-    }
-    .dot-row { display: flex; gap: clamp(2px, 0.4vw, 4px); }
-    .dot {
-      width:  clamp(7px, 1.1vw, 13px);
-      height: clamp(7px, 1.1vw, 13px);
-      border-radius: 50%;
-      background: #3388FF;
-    }
-    .dot.spacer { background: transparent; }
 
     /* Hint bar */
     #hint-bar {
@@ -481,7 +442,7 @@
       <button class="level-btn locked" data-level="2" onclick="selectLevel(2)">2<span class="lock-icon">🔒</span></button>
       <button class="level-btn locked" data-level="3" onclick="selectLevel(3)">3<span class="lock-icon">🔒</span></button>
     </div>
-    <div class="level-desc" id="level-desc">+1, +2, +3 · Dot arrays shown · Slow fish</div>
+    <div class="level-desc" id="level-desc">+1, +2, +3</div>
   </div>
 
   <button class="play-btn" onclick="startGame()">🦈 FEED!</button>
@@ -498,7 +459,7 @@
       <span id="double-badge" class="double-badge" hidden>DOUBLES!</span>
     </div>
     <div class="hud-right">
-      <span id="fish-counter">🐟 0 / 10</span>
+      <span id="fish-counter">🐟 0 / 7</span>
       <span id="score-display">0 pts</span>
       <button class="help-btn" onclick="onHelpBtn()">?</button>
     </div>
@@ -510,11 +471,6 @@
     </div>
 
     <div id="fish-lane"></div>
-
-    <div id="dot-panel" class="hidden">
-      <div class="dot-panel-label" id="dot-panel-label">answer</div>
-      <div class="dot-array" id="answer-dots"></div>
-    </div>
 
     <div id="double-chomp-flash">
       <div class="chomp-text">DOUBLE CHOMP! 🦈</div>
@@ -561,15 +517,9 @@ function makeProblemSet(level) {
       }
     }
   } else {
-    // Level 3: all facts within 10, doubles appear twice as often
-    for (let a = 1; a <= 9; a++) {
-      for (let b = 1; b <= 9; b++) {
-        if (a + b <= 10) {
-          const isDouble = (a === b);
-          problems.push({ a, b, answer: a + b, isDouble });
-          if (isDouble) problems.push({ a, b, answer: a + b, isDouble });
-        }
-      }
+    // Level 3: doubles only (1+1 through 5+5)
+    for (let a = 1; a <= 5; a++) {
+      problems.push({ a, b: a, answer: a + a, isDouble: true });
     }
   }
   return problems;
@@ -577,24 +527,21 @@ function makeProblemSet(level) {
 
 const LEVEL_CFG = {
   1: {
-    label:       '+1, +2, +3  ·  Dot arrays shown  ·  Slow fish',
-    showDots:    true,
-    fishPerRound: 2,      // 1 correct + 1 distractor
-    speedMs:     26000,   // base crossing time (very slow — effectively no escape pressure)
+    label:       '+1, +2, +3',
+    fishPerRound: 3,
+    speedMs:     26000,
     problems:    makeProblemSet(1),
   },
   2: {
-    label:       'All facts within 10  ·  Dot arrays shown  ·  Medium fish',
-    showDots:    true,
+    label:       'All facts within 10',
     fishPerRound: 3,
-    speedMs:     14000,
+    speedMs:     26000,
     problems:    makeProblemSet(2),
   },
   3: {
-    label:       'Doubles facts!  ·  Dots hidden  ·  Fast fish',
-    showDots:    false,
+    label:       'Doubles facts!',
     fishPerRound: 3,
-    speedMs:     9000,
+    speedMs:     26000,
     problems:    makeProblemSet(3),
   },
 };
@@ -603,7 +550,7 @@ const LEVEL_CFG = {
 const G = {
   level:          1,
   fishShown:      0,
-  totalFish:      10,
+  totalFish:      7,
   score:          0,
   firstTapCount:  0,   // fish caught correctly on very first tap
   firstTap:       true,
@@ -635,23 +582,6 @@ function play(name) {
   if (!s) return;
   s.currentTime = 0;
   s.play().catch(() => {});
-}
-
-// ============================= DOTS ==============================
-function renderDots(n, container) {
-  container.innerHTML = '';
-  if (n <= 0 || n > 10) return;
-  const rows = Math.ceil(n / 5);
-  for (let r = 0; r < rows; r++) {
-    const row = document.createElement('div');
-    row.className = 'dot-row';
-    for (let d = 0; d < 5; d++) {
-      const dot = document.createElement('div');
-      dot.className = (d < n - r * 5) ? 'dot' : 'dot spacer';
-      row.appendChild(dot);
-    }
-    container.appendChild(row);
-  }
 }
 
 // ============================= SHUFFLE ===========================
@@ -740,16 +670,10 @@ function onHelpBtn() {
   if (!p) return;
   play('hint');
 
-  // Reveal dot panel even on level 3
-  const panel = document.getElementById('dot-panel');
-  panel.classList.remove('hidden');
-  document.getElementById('dot-panel-label').textContent = `= ${p.answer}`;
-  renderDots(p.answer, document.getElementById('answer-dots'));
-
   if (G.wrongThisRound >= 1) {
     showHintBar(`💡 ${p.a} + ${p.b} = ${p.answer} — tap that fish! 🎯`, true);
   } else {
-    showHintBar(`💡 Count the dots — find the fish showing ${p.answer}!`, true);
+    showHintBar(`💡 ${p.a} + ${p.b} = ? Find the right number! 💪`, true);
   }
 }
 
@@ -764,15 +688,6 @@ function updateProblemDisplay() {
   document.getElementById('problem-display').innerHTML =
     `${p.a} + ${p.b} = <span class="answer-blank">?</span>`;
   document.getElementById('double-badge').hidden = !p.isDouble;
-
-  const cfg = LEVEL_CFG[G.level];
-  if (cfg.showDots) {
-    document.getElementById('dot-panel-label').textContent = `= ${p.answer}`;
-    renderDots(p.answer, document.getElementById('answer-dots'));
-    document.getElementById('dot-panel').classList.remove('hidden');
-  } else {
-    document.getElementById('dot-panel').classList.add('hidden');
-  }
 }
 
 // ============================= FISH MANAGEMENT ===================
@@ -806,7 +721,7 @@ function getYPositions(count) {
   return base.map(y => y + (Math.random() * 8 - 4)); // ±4% jitter
 }
 
-function createFishEl(fishValue, isCorrect, isBonus, yPct, speedMs) {
+function createFishEl(fishValue, isCorrect, yPct, speedMs) {
   const outer = document.createElement('div');
   outer.className = 'fish-el';
   // Speed variation ±18% so fish don't all arrive at the same moment
@@ -818,11 +733,11 @@ function createFishEl(fishValue, isCorrect, isBonus, yPct, speedMs) {
   inner.className = 'fish-inner';
 
   const img = document.createElement('img');
-  img.src = isBonus ? 'assets/fish-gold.png' : 'assets/fish-regular.png';
+  img.src = 'assets/fish-regular.png';
   img.alt = '';
 
   const label = document.createElement('div');
-  label.className = isBonus ? 'fish-label gold' : 'fish-label';
+  label.className = 'fish-label';
   label.textContent = fishValue;
 
   inner.appendChild(img);
@@ -832,7 +747,7 @@ function createFishEl(fishValue, isCorrect, isBonus, yPct, speedMs) {
   // Tap (click + touchstart)
   const onTap = (e) => {
     e.stopPropagation();
-    onFishTap(outer, inner, fishValue, isCorrect, isBonus);
+    onFishTap(outer, inner, fishValue, isCorrect);
   };
   outer.addEventListener('click', onTap);
   outer.addEventListener('touchstart', (e) => { e.preventDefault(); onTap(e); }, { passive: false });
@@ -855,14 +770,14 @@ function spawnFishRound() {
 
   // Build fish list: 1 correct + N distractors, then shuffle order
   const fishList = [
-    { value: p.answer, isCorrect: true,  isBonus: p.isBonus },
-    ...distractors.map(d => ({ value: d, isCorrect: false, isBonus: false })),
+    { value: p.answer, isCorrect: true },
+    ...distractors.map(d => ({ value: d, isCorrect: false })),
   ];
   shuffle(fishList);
 
   const lane = document.getElementById('fish-lane');
   fishList.forEach((fish, i) => {
-    const el = createFishEl(fish.value, fish.isCorrect, fish.isBonus, yPositions[i], cfg.speedMs);
+    const el = createFishEl(fish.value, fish.isCorrect, yPositions[i], cfg.speedMs);
     lane.appendChild(el);
     G.activeFishEls.push(el);
   });
@@ -900,25 +815,25 @@ function onFishAnimEnd(el, isCorrect) {
 }
 
 // ============================= TAP HANDLERS ======================
-function onFishTap(el, inner, value, isCorrect, isBonus) {
+function onFishTap(el, inner, value, isCorrect) {
   if (!G.interacting) return;
   if (el.dataset.handled === '1') return;
 
   if (isCorrect) {
-    handleCorrectFish(el, isBonus);
+    handleCorrectFish(el);
   } else {
     handleWrongFish(inner);
   }
 }
 
-function handleCorrectFish(el, isBonus) {
+function handleCorrectFish(el) {
   el.dataset.handled = '1';
   G.interacting = false;
 
   if (G.firstTap) G.firstTapCount++;
 
   const p            = G.currentProblem;
-  const basePoints   = isBonus ? 20 : 10;
+  const basePoints   = 10;
   const doubleBonus  = p.isDouble ? 5 : 0;
   G.score           += basePoints + doubleBonus;
   updateHUD();
@@ -940,8 +855,7 @@ function handleCorrectFish(el, isBonus) {
 
   // Feedback hint
   const parts = [];
-  if (isBonus)       parts.push(`BONUS FISH! +20 pts 🌟`);
-  else               parts.push(`Chomp! +${basePoints} pts`);
+  parts.push(`Chomp! +${basePoints} pts`);
   if (doubleBonus)   parts.push(`DOUBLE CHOMP +${doubleBonus} 🦈`);
   showHintBar(parts.join('  ·  '), false);
 
@@ -972,13 +886,7 @@ function handleWrongFish(inner) {
   // Progressive hints
   const p = G.currentProblem;
   if (G.wrongThisRound >= 2) {
-    // Reveal the answer directly
     showHintBar(`${p.a} + ${p.b} = ${p.answer} — tap that fish! 🎯`, true);
-    // Also show dots if hidden
-    const panel = document.getElementById('dot-panel');
-    panel.classList.remove('hidden');
-    document.getElementById('dot-panel-label').textContent = `= ${p.answer}`;
-    renderDots(p.answer, document.getElementById('answer-dots'));
   } else {
     showHintBar(`Hmm! ${p.a} + ${p.b} = ? Find the right number! 💪`, true);
   }
@@ -1005,14 +913,6 @@ function startGame() {
   setMega('swim');
   updateHUD();
 
-  // Dot panel visibility
-  const dotPanel = document.getElementById('dot-panel');
-  if (LEVEL_CFG[G.level].showDots) {
-    dotPanel.classList.remove('hidden');
-  } else {
-    dotPanel.classList.add('hidden');
-  }
-
   showScreen('game-screen');
   showHintBar('Tap the fish with the right answer! 🐟', false);
   setTimeout(nextFish, 900);
@@ -1037,9 +937,7 @@ function nextFish() {
     G.problemQueue = pool;
   }
 
-  const raw = G.problemQueue.pop();
-  // 20% chance of bonus gold fish
-  G.currentProblem = { ...raw, isBonus: Math.random() < 0.2 };
+  G.currentProblem = G.problemQueue.pop();
 
   updateProblemDisplay();
   spawnFishRound();

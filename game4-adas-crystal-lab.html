@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Ada's Crystal Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frijole&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET & ROOT ===== */
+    :root {
+      --gold:    #FFD700;
+      --green:   #44FF88;
+      --orange:  #FF9933;
+      --red:     #FF3333;
+      --dark:    #0d0d1a;
+      --lab:     #1a1a2e;
+      --ada-clr:   #9B59B6;
+      --rosie-clr: #E74C3C;
+      --iggy-clr:  #3498DB;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--dark);
+      font-family: 'Frijole', 'Comic Sans MS', cursive;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===== SCREEN BASE ===== */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen[hidden] { display: none; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+
+    /* ===== START SCREEN ===== */
+    #start-screen {
+      background: radial-gradient(ellipse at 50% 30%, #1a1a3a 0%, #0a0a1a 100%);
+      gap: clamp(12px, 2vh, 24px);
+    }
+
+    .game-title {
+      text-align: center;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.9);
+    }
+    .title-main {
+      font-size: clamp(26px, 5.5vw, 58px);
+      color: var(--gold);
+      line-height: 1.1;
+    }
+    .title-sub {
+      font-size: clamp(12px, 2vw, 22px);
+      color: #AABBDD;
+      margin-top: 4px;
+    }
+
+    .level-label {
+      font-size: clamp(12px, 1.6vw, 18px);
+      color: #AABBDD;
+      font-weight: 700;
+    }
+
+    .level-row {
+      display: flex;
+      gap: clamp(16px, 3.5vw, 48px);
+      align-items: flex-end;
+    }
+
+    .level-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .level-circle {
+      width:  clamp(70px, 12vw, 120px);
+      height: clamp(70px, 12vw, 120px);
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.18);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(20,20,40,0.7);
+      transition: all 0.18s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      font-size: clamp(36px, 6vw, 60px);
+    }
+    .level-name {
+      font-size: clamp(10px, 1.4vw, 16px);
+      color: #AABBDD;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .level-range {
+      font-size: clamp(9px, 1.1vw, 13px);
+      color: rgba(255,255,255,0.45);
+    }
+
+    .level-btn.active .level-circle {
+      border-color: var(--gold);
+      box-shadow: 0 0 22px rgba(255,215,0,0.5), 0 4px 16px rgba(0,0,0,0.5);
+      transform: scale(1.1);
+      background: rgba(30,30,60,0.85);
+    }
+    .level-btn.active .level-name { color: var(--gold); }
+
+    .start-btns {
+      display: flex;
+      gap: clamp(10px, 2vw, 20px);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .play-btn {
+      padding: clamp(10px, 1.6vw, 16px) clamp(36px, 6vw, 64px);
+      font-size: clamp(18px, 2.8vw, 30px);
+      font-family: inherit;
+      background: linear-gradient(135deg, #9B59B6, #8E44AD);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(155,89,182,0.5);
+      transition: all 0.18s;
+    }
+    .play-btn:hover  { transform: scale(1.06) translateY(-3px); }
+    .play-btn:active { transform: scale(0.97); }
+
+    .crystals-btn {
+      padding: clamp(10px, 1.6vw, 16px) clamp(20px, 3.5vw, 40px);
+      font-size: clamp(14px, 2vw, 22px);
+      font-family: inherit;
+      background: rgba(255,255,255,0.08);
+      color: #DDDDFF;
+      border: 2px solid rgba(255,215,0,0.35);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .crystals-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
+
+    /* ===== GAME SCREEN ===== */
+    #game-screen {
+      justify-content: flex-start;
+      background: radial-gradient(ellipse at 50% 80%, #1a1a3a 0%, #0a0a16 100%);
+    }
+
+    /* HUD */
+    #hud {
+      position: relative; z-index: 10;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(6px,1vh,12px) clamp(10px,2vw,20px);
+      background: rgba(10,10,26,0.9);
+      backdrop-filter: blur(6px);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    .hud-label {
+      font-size: clamp(11px, 1.6vw, 18px);
+      color: #fff;
+      white-space: nowrap;
+    }
+    .pips {
+      display: flex;
+      gap: clamp(4px, 0.8vw, 10px);
+    }
+    .pip {
+      width:  clamp(10px, 1.5vw, 18px);
+      height: clamp(10px, 1.5vw, 18px);
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+    .pip.done     { background: var(--gold);  border-color: var(--gold); box-shadow: 0 0 8px rgba(255,215,0,0.5); }
+    .pip.done.miss { background: #aaa;        border-color: #ccc; }
+
+    .miss-badge {
+      font-size: clamp(10px, 1.4vw, 16px);
+      color: #FF8888;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Game area */
+    #game-area {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(6px, 1vh, 14px) clamp(10px, 2vw, 20px);
+      gap: clamp(6px, 1vh, 14px);
+      overflow: hidden;
+    }
+
+    /* Character + prompt row */
+    #prompt-row {
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 1.5vw, 18px);
+      width: 100%;
+      justify-content: center;
+    }
+
+    #char-emoji {
+      font-size: clamp(40px, 7vw, 70px);
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
+    }
+
+    #prompt-text {
+      font-size: clamp(18px, 3vw, 36px);
+      color: #fff;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.9);
+      text-align: center;
+      line-height: 1.3;
+      background: rgba(0,0,0,0.5);
+      padding: clamp(8px, 1.2vh, 14px) clamp(14px, 2.2vw, 28px);
+      border-radius: 14px;
+      border: 2px solid rgba(255,215,0,0.25);
+      transition: border-color 0.3s;
+    }
+    #prompt-text.prompt-add {
+      border-color: rgba(68, 255, 136, 0.4);
+    }
+    #prompt-text.prompt-remove {
+      border-color: rgba(255, 153, 51, 0.4);
+    }
+    .hop-num { font-weight: 900; }
+    .prompt-add .hop-num  { color: var(--green); }
+    .prompt-remove .hop-num { color: var(--orange); }
+
+    .dir-icon {
+      font-size: clamp(16px, 2.5vw, 28px);
+      font-weight: 900;
+      margin-right: 6px;
+    }
+    .dir-icon.add  { color: var(--green); }
+    .dir-icon.remove { color: var(--orange); }
+
+    /* ===== GRADUATED CYLINDER ===== */
+    #cylinder-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #cylinder {
+      position: relative;
+      width: clamp(90px, 14vw, 150px);
+      background: rgba(255,255,255,0.04);
+      border: 3px solid rgba(255,255,255,0.2);
+      border-radius: 6px 6px 16px 16px;
+      overflow: hidden;
+      transition: opacity 0.25s;
+    }
+
+    #cylinder-goo {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--ada-clr);
+      opacity: 0.55;
+      transition: height 0.3s ease;
+      z-index: 1;
+    }
+
+    /* Bubble effect on goo surface */
+    #cylinder-goo::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 0; right: 0;
+      height: 8px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%);
+      border-radius: 50%;
+    }
+
+    #cylinder-inner {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cyl-mark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      transition: background 0.15s, transform 0.15s;
+      position: relative;
+    }
+    .cyl-mark:last-child { border-bottom: none; }
+    .cyl-mark:hover:not(.current) {
+      background: rgba(255,255,255,0.12);
+    }
+    .cyl-mark:active:not(.current) {
+      transform: scale(0.95);
+    }
+    .cyl-mark.current {
+      cursor: default;
+      background: rgba(255,215,0,0.15);
+    }
+
+    /* Tick marks on the side */
+    .cyl-mark::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 8px;
+      height: 1px;
+      background: rgba(255,255,255,0.3);
+    }
+    .cyl-mark::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      width: 8px;
+      height: 1px;
+      background: rgba(255,255,255,0.3);
+    }
+
+    .mark-num {
+      font-size: clamp(14px, 2.2vw, 22px);
+      color: rgba(255,255,255,0.8);
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+    .cyl-mark.current .mark-num {
+      color: var(--gold);
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(255,215,0,0.6);
+    }
+
+    /* Flash animation for intermediate numbers */
+    @keyframes markFlash {
+      0%   { background: rgba(255,215,0,0.5); }
+      100% { background: rgba(255,215,0,0); }
+    }
+    .cyl-mark.flash {
+      animation: markFlash 0.4s ease-out;
+    }
+    .cyl-mark.flash .mark-num {
+      color: var(--gold);
+      transform: scale(1.3);
+      transition: transform 0.2s;
+    }
+
+    /* Cylinder shake on wrong answer */
+    @keyframes cylinderShake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-8px); }
+      40%     { transform: translateX(8px); }
+      60%     { transform: translateX(-5px); }
+      80%     { transform: translateX(5px); }
+    }
+    #cylinder.shake {
+      animation: cylinderShake 0.4s ease-in-out;
+    }
+
+    /* ===== HINT BAR ===== */
+    #hint-bar {
+      position: absolute;
+      bottom: clamp(6px, 1.2vh, 14px);
+      left: 50%; transform: translateX(-50%);
+      z-index: 15;
+      background: rgba(0,0,16,0.92);
+      border: 2px solid rgba(255,255,255,0.22);
+      border-radius: 16px;
+      padding: clamp(6px,0.8vh,12px) clamp(12px,2vw,24px);
+      color: #fff;
+      font-size: clamp(11px, 1.6vw, 18px);
+      text-align: center;
+      max-width: 90%;
+      backdrop-filter: blur(6px);
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    #hint-bar.hidden { opacity: 0; }
+
+    /* ===== CRYSTAL TIME CUTSCENE ===== */
+    #crystal-cutscene {
+      background: radial-gradient(ellipse at 50% 50%, #2a1a3a 0%, #0a0a1a 100%);
+      gap: clamp(14px, 2.5vh, 30px);
+    }
+
+    .crystal-time-title {
+      font-size: clamp(32px, 7vw, 72px);
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(255,215,0,0.6), 0 4px 16px rgba(0,0,0,0.8);
+      animation: crystalPulse 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes crystalPulse {
+      from { transform: scale(1); text-shadow: 0 0 20px rgba(255,215,0,0.4); }
+      to   { transform: scale(1.08); text-shadow: 0 0 40px rgba(255,215,0,0.8); }
+    }
+
+    .crystal-time-sub {
+      font-size: clamp(14px, 2.2vw, 24px);
+      color: #DDBBFF;
+    }
+
+    /* ===== CRYSTAL KEYPAD ===== */
+    #crystal-keypad {
+      background: radial-gradient(ellipse at 50% 50%, #1a1a3a 0%, #0a0a16 100%);
+      gap: clamp(10px, 1.8vh, 22px);
+    }
+
+    #crystal-prompt {
+      font-size: clamp(18px, 3vw, 36px);
+      color: #fff;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.9);
+      text-align: center;
+      background: rgba(0,0,0,0.5);
+      padding: clamp(8px, 1.2vh, 14px) clamp(14px, 2.2vw, 28px);
+      border-radius: 14px;
+      border: 2px solid rgba(255,215,0,0.3);
+    }
+    #crystal-prompt .hop-num { color: var(--gold); }
+
+    #crystal-keypad-display {
+      font-size: clamp(28px, 5vw, 56px);
+      color: var(--gold);
+      text-shadow: 0 3px 12px rgba(0,0,0,0.8);
+      min-width: clamp(50px, 8vw, 100px);
+      text-align: center;
+      background: rgba(0,0,0,0.6);
+      border-radius: 12px;
+      padding: clamp(3px, 0.6vh, 8px) clamp(12px, 2vw, 24px);
+      border: 2px solid rgba(255,215,0,0.4);
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(4px, 0.7vw, 10px);
+    }
+    .key-btn {
+      width:  clamp(44px, 7vw, 80px);
+      height: clamp(44px, 7vw, 80px);
+      border-radius: clamp(8px, 1.2vw, 14px);
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.28);
+      color: #fff;
+      font-size: clamp(18px, 2.8vw, 32px);
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.14s;
+    }
+    .key-btn:hover  { background: rgba(255,255,255,0.24); transform: scale(1.08); }
+    .key-btn:active { transform: scale(0.93); }
+    .key-btn.key-del { background: rgba(255,80,0,0.25); border-color: rgba(255,80,0,0.5); font-size: clamp(14px, 2vw, 24px); }
+    .key-btn.key-zero { grid-column: 2; }
+
+    #crystal-submit-btn {
+      padding: clamp(8px, 1.2vh, 14px) clamp(24px, 4vw, 50px);
+      font-size: clamp(16px, 2.4vw, 28px);
+      font-family: inherit;
+      background: linear-gradient(135deg, #9B59B6, #8E44AD);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(155,89,182,0.5);
+      transition: all 0.16s;
+    }
+    #crystal-submit-btn:hover  { transform: scale(1.07) translateY(-2px); }
+    #crystal-submit-btn:active { transform: scale(0.96); }
+
+    .crystal-no-hint {
+      font-size: clamp(11px, 1.5vw, 17px);
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Shake for crystal keypad wrong */
+    @keyframes keypadShake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-6px); }
+      40%     { transform: translateX(6px); }
+      60%     { transform: translateX(-4px); }
+      80%     { transform: translateX(4px); }
+    }
+    .keypad-shake { animation: keypadShake 0.4s ease-in-out; }
+
+    /* ===== CRYSTAL RESULT ===== */
+    #crystal-result {
+      background: rgba(0,0,0,0.93);
+      gap: clamp(12px, 2vh, 22px);
+    }
+
+    .crystal-result-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(10px, 1.8vh, 20px);
+      max-width: 500px;
+      padding: clamp(16px, 3vw, 36px);
+    }
+
+    .crystal-result-title {
+      font-size: clamp(22px, 4.5vw, 48px);
+      color: var(--gold);
+      text-shadow: 0 4px 14px rgba(0,0,0,0.7);
+      text-align: center;
+    }
+
+    /* Crystal display gem */
+    .crystal-gem {
+      width:  clamp(80px, 14vw, 140px);
+      height: clamp(80px, 14vw, 140px);
+      animation: crystalFloat 2s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
+    }
+    @keyframes crystalFloat {
+      from { transform: translateY(0) rotate(-3deg); }
+      to   { transform: translateY(-8px) rotate(3deg); }
+    }
+
+    .crystal-gem-name {
+      font-size: clamp(16px, 2.5vw, 28px);
+      color: #EEDDFF;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    .crystal-miss-msg {
+      font-size: clamp(14px, 2vw, 22px);
+      color: #AABBDD;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .result-btns {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: clamp(10px,1.5vw,16px) clamp(24px,4vw,48px);
+      font-size: clamp(14px, 2vw, 20px);
+      font-family: inherit;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn:hover  { transform: scale(1.06) translateY(-2px); }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary   { background: linear-gradient(135deg, #9B59B6, #8E44AD); color: #fff; box-shadow: 0 6px 20px rgba(155,89,182,0.45); }
+    .btn-secondary { background: rgba(255,255,255,0.12); color: #fff; border: 2px solid rgba(255,255,255,0.3); }
+
+    /* ===== COLLECTION SCREEN ===== */
+    #collection-screen {
+      background: radial-gradient(ellipse at 50% 20%, #1a1a3a 0%, #0a0a1a 100%);
+      justify-content: flex-start;
+    }
+
+    #collection-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(8px,1.2vh,14px) clamp(12px,2vw,24px);
+      background: rgba(10,10,26,0.9);
+      backdrop-filter: blur(6px);
+      flex-shrink: 0;
+    }
+
+    .collection-title {
+      font-size: clamp(16px, 2.5vw, 28px);
+      color: var(--gold);
+    }
+    .collection-count {
+      font-size: clamp(11px, 1.5vw, 17px);
+      color: #AABBDD;
+    }
+
+    .back-btn {
+      padding: 6px 16px;
+      font-size: clamp(12px, 1.6vw, 18px);
+      font-family: inherit;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+
+    #collection-grid {
+      flex: 1;
+      width: 100%;
+      overflow-y: auto;
+      padding: clamp(10px, 2vw, 20px);
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(clamp(60px, 10vw, 90px), 1fr));
+      gap: clamp(8px, 1.2vw, 14px);
+      align-content: start;
+    }
+
+    .collection-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .collection-slot.earned {
+      background: rgba(255,215,0,0.06);
+      border-color: rgba(255,215,0,0.2);
+    }
+
+    .collection-gem {
+      width: clamp(36px, 6vw, 56px);
+      height: clamp(36px, 6vw, 56px);
+    }
+    .collection-gem.locked {
+      opacity: 0.15;
+      filter: grayscale(1);
+    }
+
+    .collection-gem-name {
+      font-size: clamp(7px, 1vw, 10px);
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      font-family: 'Comic Sans MS', cursive;
+      font-weight: 700;
+      line-height: 1.1;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .collection-slot.earned .collection-gem-name {
+      color: #DDCCFF;
+    }
+
+    /* ===== CONFETTI ===== */
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      border-radius: 3px;
+      pointer-events: none;
+      z-index: 20;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg);       opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== START SCREEN ==================== -->
+<div id="start-screen" class="screen">
+  <div class="game-title">
+    <div class="title-main">Ada's</div>
+    <div class="title-main">Crystal Lab</div>
+    <div class="title-sub">Add &amp; remove to discover crystals!</div>
+  </div>
+
+  <div class="level-label">Choose Your Scientist</div>
+
+  <div class="level-row">
+    <div class="level-btn" data-level="1" onclick="selectLevel(1)">
+      <div class="level-circle">👩‍🔬</div>
+      <div class="level-name">ADA</div>
+      <div class="level-range">±1 to ±3</div>
+    </div>
+    <div class="level-btn" data-level="2" onclick="selectLevel(2)">
+      <div class="level-circle">👷‍♀️</div>
+      <div class="level-name">ROSIE</div>
+      <div class="level-range">±1 to ±5</div>
+    </div>
+    <div class="level-btn" data-level="3" onclick="selectLevel(3)">
+      <div class="level-circle">👦</div>
+      <div class="level-name">IGGY</div>
+      <div class="level-range">±1 to ±9</div>
+    </div>
+  </div>
+
+  <div class="start-btns">
+    <button class="play-btn" onclick="startGame()">PLAY!</button>
+    <button class="crystals-btn" onclick="showCollection()">My Crystals <span id="crystal-count-badge">0</span>/100</button>
+  </div>
+</div>
+
+<!-- ==================== GAME SCREEN ==================== -->
+<div id="game-screen" class="screen" hidden>
+  <div id="hud">
+    <span class="hud-label">Round <span id="round-num">1</span>/5</span>
+    <div class="pips" id="pips"></div>
+    <span class="miss-badge" id="miss-badge">Misses: 0</span>
+  </div>
+
+  <div id="game-area">
+    <div id="prompt-row">
+      <div id="char-emoji">👩‍🔬</div>
+      <div id="prompt-text">Add <span class="hop-num">3</span>!</div>
+    </div>
+
+    <div id="cylinder-wrap">
+      <div id="cylinder">
+        <div id="cylinder-goo"></div>
+        <div id="cylinder-inner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hint-bar" class="hidden"></div>
+</div>
+
+<!-- ==================== CRYSTAL TIME CUTSCENE ==================== -->
+<div id="crystal-cutscene" class="screen" hidden>
+  <div class="crystal-time-title">CRYSTAL TIME!</div>
+  <div class="crystal-time-sub">Answer without the cylinder...</div>
+</div>
+
+<!-- ==================== CRYSTAL KEYPAD ==================== -->
+<div id="crystal-keypad" class="screen" hidden>
+  <div id="crystal-prompt"></div>
+  <div id="crystal-keypad-display">?</div>
+  <div class="keypad-grid">
+    <button class="key-btn" onclick="crystalKeypadDigit('7')">7</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('8')">8</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('9')">9</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('4')">4</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('5')">5</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('6')">6</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('1')">1</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('2')">2</button>
+    <button class="key-btn" onclick="crystalKeypadDigit('3')">3</button>
+    <button class="key-btn key-del" onclick="crystalKeypadDel()">&#x232B;</button>
+    <button class="key-btn key-zero" onclick="crystalKeypadDigit('0')">0</button>
+  </div>
+  <button id="crystal-submit-btn" onclick="crystalKeypadSubmit()">GO!</button>
+  <div class="crystal-no-hint">No cylinder this time — you can do it!</div>
+</div>
+
+<!-- ==================== CRYSTAL RESULT ==================== -->
+<div id="crystal-result" class="screen" hidden>
+  <div class="crystal-result-content">
+    <div class="crystal-result-title" id="cr-title"></div>
+    <div id="cr-gem-wrap"></div>
+    <div class="crystal-gem-name" id="cr-gem-name"></div>
+    <div class="crystal-miss-msg" id="cr-miss-msg"></div>
+    <div class="result-btns">
+      <button class="btn btn-primary" onclick="playAgain()">Play Again!</button>
+      <button class="btn btn-secondary" onclick="goHome()">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== COLLECTION SCREEN ==================== -->
+<div id="collection-screen" class="screen" hidden>
+  <div id="collection-header">
+    <span class="collection-title">My Crystals</span>
+    <span class="collection-count" id="collection-count">0 / 100</span>
+    <button class="back-btn" onclick="goHome()">&#x2190; Back</button>
+  </div>
+  <div id="collection-grid"></div>
+</div>
+
+<script>
+// ============================= CRYSTAL DATA =============================
+const CRYSTAL_NAMES = [
+  // Real minerals (25)
+  'Rose Quartz','Amethyst','Tiger\'s Eye','Moonstone','Star Sapphire',
+  'Topaz','Jade','Obsidian','Opal','Ruby',
+  'Emerald','Turquoise','Garnet','Lapis Lazuli','Citrine',
+  'Aquamarine','Alexandrite','Tanzanite','Sunstone','Labradorite',
+  'Fluorite','Pyrite','Malachite','Rhodonite','Agate',
+  // Silly names (40)
+  'Sparkle Fizz','Bubblegum Boulder','Cosmic Jelly','Wobbly Jade','Rainbow Crunch',
+  'Gummy Crystal','Fizzy Stone','Twinkle Rock','Silly Sapphire','Bouncy Beryl',
+  'Giggly Gem','Candy Quartz','Fluffy Flint','Bubble Stone','Dizzy Diamond',
+  'Wiggly Waverite','Jolly Jasper','Tickle Topaz','Snickerdoodle Stone','Pudding Pearl',
+  'Marshmallow Marble','Glitter Glop','Squish Stone','Zoom Zircon','Wacky Wulfenite',
+  'Blinky Basalt','Poppy Pumice','Doodle Diamond','Zippy Zoisite','Noodle Nephrite',
+  'Pancake Pearl','Squishy Schist','Twisty Tourmaline','Boopy Bismuth','Loopy Lazulite',
+  'Giggly Granite','Fuzzy Feldspar','Roly-Poly Ruby','Jazzy Jet','Quirky Quartzite',
+  // Ada Twist / Science puns (35)
+  'Hypothesite','Experimentium','Curiosity Crystal','Beaker\'s Dream','Lab Coat Lazuli',
+  'Microscope Marble','Test Tube Topaz','Flask Fluorite','Petri Pearl','Bunsen Beryl',
+  'Atom Agate','Molecule Morganite','Catalyst Crystal','Reagent Ruby','Solution Sapphire',
+  'Pipette Pearl','Spectrum Stone','Prism Pearl','Newton\'s Nugget','Einstein\'s Emerald',
+  'Curie Crystal','DNA Diamond','Helix Howlite','Quantum Quartz','Proton Pearl',
+  'Electron Emerald','Neutron Nephrite','Photon Feldspar','Gravity Garnet','Magneton Mica',
+  'Velocity Variscite','Fusion Fluorite','Galaxy Geode','Nebula Nephrite','Supernova Stone',
+];
+
+const SHAPES = ['hex','diamond','oval','spike'];
+const SHAPE_CLIPS = {
+  hex:     'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+  diamond: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+  oval:    'ellipse(45% 50% at 50% 50%)',
+  spike:   'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+};
+
+function getCrystalVisual(id) {
+  const hue = (id * 137.5) % 360;
+  const shape = SHAPES[id % 4];
+  return {
+    background: `linear-gradient(135deg, hsl(${hue}, 80%, 65%), hsl(${(hue+40)%360}, 70%, 45%), hsl(${(hue+80)%360}, 75%, 60%))`,
+    clipPath: SHAPE_CLIPS[shape],
+  };
+}
+
+function renderCrystalGem(id, className) {
+  const v = getCrystalVisual(id);
+  const el = document.createElement('div');
+  el.className = className;
+  el.style.background = v.background;
+  el.style.clipPath = v.clipPath;
+  return el;
+}
+
+// ============================= CRYSTAL COLLECTION ===================
+const LS_KEY = 'crystal_lab_crystals';
+
+function loadCollection() {
+  try {
+    const data = localStorage.getItem(LS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
+}
+
+function saveCollection(arr) {
+  localStorage.setItem(LS_KEY, JSON.stringify(arr));
+}
+
+function addToCollection(id) {
+  const coll = loadCollection();
+  if (!coll.includes(id)) {
+    coll.push(id);
+    saveCollection(coll);
+  }
+}
+
+function updateCrystalCountBadge() {
+  const count = loadCollection().length;
+  document.getElementById('crystal-count-badge').textContent = count;
+}
+
+// Shuffled bag of unearned crystal IDs
+let crystalBag = [];
+
+function pickCrystalId() {
+  const coll = loadCollection();
+  if (coll.length >= 100) return -1; // all collected
+
+  if (crystalBag.length === 0) {
+    // Fill with unearned IDs and shuffle
+    crystalBag = [];
+    for (let i = 0; i < 100; i++) {
+      if (!coll.includes(i)) crystalBag.push(i);
+    }
+    // Fisher-Yates shuffle
+    for (let i = crystalBag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [crystalBag[i], crystalBag[j]] = [crystalBag[j], crystalBag[i]];
+    }
+  }
+
+  return crystalBag.pop();
+}
+
+// ============================= STATE ================================
+const G = {
+  level:        1,
+  round:        0,
+  gooLevel:     5,
+  direction:    'add',
+  jump:         0,
+  target:       0,
+  totalMisses:  0,
+  roundMisses:  0,
+  firstTry:     true,
+  roundResults: [],
+  interacting:  true,
+  // crystal time
+  crystalDirection: 'add',
+  crystalStart: 0,
+  crystalJump:  0,
+  crystalTarget: 0,
+  crystalInput: '',
+  crystalId:    -1,
+  crystalInteracting: true,
+};
+
+const LEVEL_CFG = {
+  1: { emoji: '👩‍🔬', label: 'Ada',   maxJump: 3, gooColor: 'var(--ada-clr)',   startMin: 3,  startMax: 6  },
+  2: { emoji: '👷‍♀️', label: 'Rosie', maxJump: 5, gooColor: 'var(--rosie-clr)', startMin: 5,  startMax: 8  },
+  3: { emoji: '👦',  label: 'Iggy',  maxJump: 9, gooColor: 'var(--iggy-clr)',  startMin: 8,  startMax: 12 },
+};
+
+// ============================= AUDIO ================================
+function mkAudio(src) {
+  const a = new Audio(src);
+  a.preload = 'auto';
+  return a;
+}
+
+const SFX = {
+  correct: mkAudio('assets/sfc-correct.wav'),
+  wrong:   mkAudio('assets/sfx-wrong.wav'),
+  victory: mkAudio('assets/sfx-victory.wav'),
+  whoosh:  mkAudio('assets/whoosh.wav'),
+  ouch:    mkAudio('assets/ouch.wav'),
+  yahoo:   mkAudio('assets/yahoo.mp3'),
+};
+
+function play(name) {
+  const s = SFX[name];
+  if (!s) return;
+  s.currentTime = 0;
+  s.play().catch(() => {});
+}
+
+// ============================= SCREEN NAV ===========================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.hidden = true);
+  const el = document.getElementById(id);
+  el.hidden = false;
+  el.classList.remove('fade-in');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
+}
+
+function goHome() {
+  updateCrystalCountBadge();
+  showScreen('start-screen');
+}
+
+function playAgain() { startGame(); }
+
+// ============================= START SCREEN =========================
+selectLevel(1);
+
+function selectLevel(n) {
+  G.level = n;
+  document.querySelectorAll('.level-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.level === n);
+  });
+}
+
+function startGame() {
+  const cfg = LEVEL_CFG[G.level];
+  G.round        = 0;
+  G.gooLevel     = 0;
+  G.totalMisses  = 0;
+  G.roundMisses  = 0;
+  G.firstTry     = true;
+  G.roundResults = [];
+  G.interacting  = true;
+
+  document.getElementById('char-emoji').textContent = cfg.emoji;
+
+  showScreen('game-screen');
+  updateHUD();
+  setTimeout(nextRound, 400);
+}
+
+// ============================= HUD ==================================
+function updateHUD() {
+  document.getElementById('round-num').textContent = G.round;
+  document.getElementById('miss-badge').textContent = `Misses: ${G.totalMisses}`;
+
+  const pips = document.getElementById('pips');
+  pips.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'pip';
+    if (i < G.roundResults.length) {
+      pip.classList.add('done');
+      if (G.roundResults[i] === 'miss') pip.classList.add('miss');
+    }
+    pips.appendChild(pip);
+  }
+}
+
+// ============================= QUESTION GEN =========================
+function generateQuestion() {
+  const cfg = LEVEL_CFG[G.level];
+
+  if (G.round === 1) {
+    G.gooLevel = cfg.startMin + Math.floor(Math.random() * (cfg.startMax - cfg.startMin + 1));
+  }
+  // else: chain from previous (G.gooLevel = G.target from last round)
+
+  G.direction = Math.random() < 0.5 ? 'add' : 'remove';
+  G.jump = 1 + Math.floor(Math.random() * cfg.maxJump);
+
+  // Validate: can't go below 1
+  if (G.direction === 'remove' && G.gooLevel - G.jump < 1) {
+    G.direction = 'add';
+  }
+
+  G.target = G.direction === 'add'
+    ? G.gooLevel + G.jump
+    : G.gooLevel - G.jump;
+
+  G.roundMisses = 0;
+  G.firstTry    = true;
+  G.interacting = true;
+}
+
+function nextRound() {
+  G.round++;
+  generateQuestion();
+  updateHUD();
+  renderPrompt();
+  renderCylinder();
+  hideHintBar();
+}
+
+// ============================= PROMPT ===============================
+function renderPrompt() {
+  const addPhrasings = [
+    `<span class="dir-icon add">+</span>Add <span class="hop-num">${G.jump}</span>!`,
+    `<span class="hop-num">${G.gooLevel}</span> + <span class="hop-num">${G.jump}</span> = ?`,
+    `<span class="dir-icon add">&#x2192;</span>Count on <span class="hop-num">${G.jump}</span> from <span class="hop-num">${G.gooLevel}</span>!`,
+  ];
+
+  const removePhrasings = [
+    `<span class="dir-icon remove">&minus;</span>Remove <span class="hop-num">${G.jump}</span>!`,
+    `<span class="hop-num">${G.gooLevel}</span> &minus; <span class="hop-num">${G.jump}</span> = ?`,
+    `<span class="dir-icon remove">&#x2190;</span>Count back <span class="hop-num">${G.jump}</span> from <span class="hop-num">${G.gooLevel}</span>!`,
+  ];
+
+  const phrasings = G.direction === 'add' ? addPhrasings : removePhrasings;
+  const pick = phrasings[Math.floor(Math.random() * phrasings.length)];
+
+  const el = document.getElementById('prompt-text');
+  el.innerHTML = pick;
+  el.className = G.direction === 'add' ? 'prompt-add' : 'prompt-remove';
+}
+
+// ============================= CYLINDER =============================
+function renderCylinder() {
+  const cfg = LEVEL_CFG[G.level];
+  const maxJump = cfg.maxJump;
+
+  const lowest  = Math.max(1, G.gooLevel - maxJump);
+  const highest = G.gooLevel + maxJump;
+  const totalMarks = highest - lowest + 1;
+
+  // Set mark height based on available space
+  const maxCylHeight = Math.min(window.innerHeight * 0.55, 500);
+  const markH = Math.max(28, Math.floor(maxCylHeight / totalMarks));
+  const cylHeight = markH * totalMarks;
+
+  const cylinder = document.getElementById('cylinder');
+  cylinder.style.height = cylHeight + 'px';
+
+  const inner = document.getElementById('cylinder-inner');
+  inner.innerHTML = '';
+
+  // Render marks top (highest) to bottom (lowest)
+  for (let n = highest; n >= lowest; n--) {
+    const mark = document.createElement('div');
+    mark.className = 'cyl-mark';
+    mark.style.height = markH + 'px';
+    if (n === G.gooLevel) mark.classList.add('current');
+    mark.dataset.num = n;
+
+    const numEl = document.createElement('span');
+    numEl.className = 'mark-num';
+    numEl.textContent = n;
+    mark.appendChild(numEl);
+
+    if (n !== G.gooLevel) {
+      mark.onclick = () => onMarkClick(n);
+    }
+
+    inner.appendChild(mark);
+  }
+
+  // Set goo height
+  const filledFromBottom = G.gooLevel - lowest + 1;
+  const gooPercent = ((filledFromBottom - 0.5) / totalMarks) * 100;
+
+  const goo = document.getElementById('cylinder-goo');
+  goo.style.transition = 'none';
+  goo.style.height = Math.max(0, gooPercent) + '%';
+  goo.style.background = cfg.gooColor;
+
+  // Re-enable transition after render
+  requestAnimationFrame(() => {
+    goo.style.transition = 'height 0.3s ease';
+  });
+}
+
+function updateGooToLevel(targetLevel) {
+  const cfg = LEVEL_CFG[G.level];
+  const maxJump = cfg.maxJump;
+  const lowest  = Math.max(1, G.gooLevel - maxJump);
+  const highest = G.gooLevel + maxJump;
+  const totalMarks = highest - lowest + 1;
+
+  const filledFromBottom = targetLevel - lowest + 1;
+  const gooPercent = ((filledFromBottom - 0.5) / totalMarks) * 100;
+
+  const goo = document.getElementById('cylinder-goo');
+  goo.style.height = Math.max(0, Math.min(100, gooPercent)) + '%';
+}
+
+// ============================= MARK CLICK ===========================
+function onMarkClick(num) {
+  if (!G.interacting) return;
+  G.interacting = false;
+
+  if (num === G.target) {
+    handleCorrect();
+  } else {
+    handleWrong();
+  }
+}
+
+function handleCorrect() {
+  play('correct');
+  animateGoo(G.gooLevel, G.target, () => {
+    G.gooLevel = G.target;
+    G.roundResults.push(G.firstTry ? 'clean' : 'miss');
+    updateHUD();
+
+    if (G.round >= 5) {
+      setTimeout(showCrystalTime, 600);
+    } else {
+      setTimeout(nextRound, 400);
+    }
+  });
+}
+
+function animateGoo(from, to, callback) {
+  const diff = to - from;
+  const steps = Math.abs(diff);
+  const dir = diff > 0 ? 1 : -1;
+
+  let step = 0;
+
+  function doStep() {
+    step++;
+    const currentMark = from + step * dir;
+
+    // Animate goo height
+    updateGooToLevel(currentMark);
+
+    // Flash the mark number
+    const markEl = document.querySelector(`.cyl-mark[data-num="${currentMark}"]`);
+    if (markEl) {
+      play('whoosh');
+      markEl.classList.remove('flash');
+      void markEl.offsetWidth;
+      markEl.classList.add('flash');
+    }
+
+    if (step < steps) {
+      setTimeout(doStep, 280);
+    } else {
+      // Done — re-center after a brief pause
+      setTimeout(() => {
+        recenterCylinder(to, callback);
+      }, 350);
+    }
+  }
+
+  doStep();
+}
+
+function recenterCylinder(newLevel, callback) {
+  const cylinder = document.getElementById('cylinder');
+  cylinder.style.transition = 'opacity 0.2s';
+  cylinder.style.opacity = '0.3';
+
+  setTimeout(() => {
+    G.gooLevel = newLevel;
+    renderCylinder();
+    cylinder.style.opacity = '1';
+    setTimeout(() => {
+      cylinder.style.transition = '';
+      if (callback) callback();
+    }, 250);
+  }, 220);
+}
+
+function handleWrong() {
+  G.totalMisses++;
+  G.roundMisses++;
+  G.firstTry = false;
+  play('ouch');
+  updateHUD();
+
+  // Shake cylinder
+  const cyl = document.getElementById('cylinder');
+  cyl.classList.remove('shake');
+  void cyl.offsetWidth;
+  cyl.classList.add('shake');
+
+  if (G.roundMisses >= 2) {
+    const hint = G.direction === 'add'
+      ? `Start at ${G.gooLevel}, count up ${G.jump} on your fingers!`
+      : `Start at ${G.gooLevel}, count back ${G.jump} on your fingers!`;
+    showHintBar(hint);
+  }
+
+  setTimeout(() => {
+    cyl.classList.remove('shake');
+    G.interacting = true;
+  }, 500);
+}
+
+// ============================= HINT BAR =============================
+let hintTimer = null;
+
+function showHintBar(text) {
+  const bar = document.getElementById('hint-bar');
+  bar.textContent = text;
+  bar.classList.remove('hidden');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => bar.classList.add('hidden'), 3000);
+}
+
+function hideHintBar() {
+  clearTimeout(hintTimer);
+  document.getElementById('hint-bar').classList.add('hidden');
+}
+
+// ============================= CRYSTAL TIME =========================
+function showCrystalTime() {
+  play('yahoo');
+  showScreen('crystal-cutscene');
+  setTimeout(showCrystalKeypad, 2200);
+}
+
+function showCrystalKeypad() {
+  const cfg = LEVEL_CFG[G.level];
+
+  // Generate a crystal question at the same difficulty
+  G.crystalDirection = Math.random() < 0.5 ? 'add' : 'remove';
+  G.crystalJump = 1 + Math.floor(Math.random() * cfg.maxJump);
+  // Pick a safe start
+  if (G.crystalDirection === 'remove') {
+    G.crystalStart = G.crystalJump + 1 + Math.floor(Math.random() * 10);
+  } else {
+    G.crystalStart = 1 + Math.floor(Math.random() * 15);
+  }
+
+  // Validate
+  if (G.crystalDirection === 'remove' && G.crystalStart - G.crystalJump < 1) {
+    G.crystalDirection = 'add';
+  }
+
+  G.crystalTarget = G.crystalDirection === 'add'
+    ? G.crystalStart + G.crystalJump
+    : G.crystalStart - G.crystalJump;
+
+  G.crystalInput = '';
+  G.crystalInteracting = true;
+
+  // Pick a crystal to potentially award
+  G.crystalId = pickCrystalId();
+
+  // Build prompt with random phrasing
+  const addPhrasings = [
+    `Add <span class="hop-num">${G.crystalJump}</span> to <span class="hop-num">${G.crystalStart}</span>!`,
+    `<span class="hop-num">${G.crystalStart}</span> + <span class="hop-num">${G.crystalJump}</span> = ?`,
+    `Count on <span class="hop-num">${G.crystalJump}</span> from <span class="hop-num">${G.crystalStart}</span>!`,
+  ];
+  const removePhrasings = [
+    `Remove <span class="hop-num">${G.crystalJump}</span> from <span class="hop-num">${G.crystalStart}</span>!`,
+    `<span class="hop-num">${G.crystalStart}</span> &minus; <span class="hop-num">${G.crystalJump}</span> = ?`,
+    `Count back <span class="hop-num">${G.crystalJump}</span> from <span class="hop-num">${G.crystalStart}</span>!`,
+  ];
+
+  const phrasings = G.crystalDirection === 'add' ? addPhrasings : removePhrasings;
+  document.getElementById('crystal-prompt').innerHTML = phrasings[Math.floor(Math.random() * phrasings.length)];
+  document.getElementById('crystal-keypad-display').textContent = '?';
+
+  showScreen('crystal-keypad');
+}
+
+function crystalKeypadDigit(d) {
+  if (!G.crystalInteracting) return;
+  if (G.crystalInput.length >= 3) return;
+  G.crystalInput += d;
+  document.getElementById('crystal-keypad-display').textContent = G.crystalInput;
+}
+
+function crystalKeypadDel() {
+  G.crystalInput = G.crystalInput.slice(0, -1);
+  document.getElementById('crystal-keypad-display').textContent = G.crystalInput || '?';
+}
+
+function crystalKeypadSubmit() {
+  if (!G.crystalInteracting) return;
+  if (!G.crystalInput) return;
+  G.crystalInteracting = false;
+
+  const answer = parseInt(G.crystalInput, 10);
+
+  if (answer === G.crystalTarget) {
+    crystalCorrect();
+  } else {
+    crystalWrong();
+  }
+}
+
+function crystalCorrect() {
+  play('victory');
+  setTimeout(() => play('yahoo'), 300);
+
+  if (G.crystalId >= 0) {
+    addToCollection(G.crystalId);
+  }
+
+  setTimeout(() => showCrystalReveal(true), 600);
+}
+
+function crystalWrong() {
+  play('wrong');
+
+  // Shake the display
+  const disp = document.getElementById('crystal-keypad-display');
+  disp.classList.remove('keypad-shake');
+  void disp.offsetWidth;
+  disp.classList.add('keypad-shake');
+
+  setTimeout(() => showCrystalReveal(false), 1200);
+}
+
+function showCrystalReveal(earned) {
+  const wrap = document.getElementById('cr-gem-wrap');
+  wrap.innerHTML = '';
+
+  if (earned && G.crystalId >= 0) {
+    showConfetti('crystal-result');
+    document.getElementById('cr-title').textContent = 'Crystal Discovered!';
+
+    const gem = renderCrystalGem(G.crystalId, 'crystal-gem');
+    wrap.appendChild(gem);
+
+    document.getElementById('cr-gem-name').textContent = CRYSTAL_NAMES[G.crystalId];
+    document.getElementById('cr-gem-name').style.display = '';
+    document.getElementById('cr-miss-msg').style.display = 'none';
+  } else if (earned && G.crystalId < 0) {
+    // All crystals collected!
+    document.getElementById('cr-title').textContent = 'All Crystals Discovered!';
+    document.getElementById('cr-gem-name').textContent = 'You\'ve found every crystal! Amazing!';
+    document.getElementById('cr-gem-name').style.display = '';
+    document.getElementById('cr-miss-msg').style.display = 'none';
+    showConfetti('crystal-result');
+  } else {
+    document.getElementById('cr-title').textContent = 'Not quite!';
+    document.getElementById('cr-gem-name').style.display = 'none';
+    const correctAnswer = G.crystalTarget;
+    document.getElementById('cr-miss-msg').textContent =
+      `The answer was ${correctAnswer}. Keep practicing — you'll get the next one!`;
+    document.getElementById('cr-miss-msg').style.display = '';
+  }
+
+  showScreen('crystal-result');
+  updateCrystalCountBadge();
+}
+
+// ============================= COLLECTION ===========================
+function showCollection() {
+  const coll = loadCollection();
+  const grid = document.getElementById('collection-grid');
+  grid.innerHTML = '';
+
+  document.getElementById('collection-count').textContent = `${coll.length} / 100`;
+
+  for (let i = 0; i < 100; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'collection-slot';
+    const earned = coll.includes(i);
+    if (earned) slot.classList.add('earned');
+
+    const gem = renderCrystalGem(i, 'collection-gem');
+    if (!earned) gem.classList.add('locked');
+    slot.appendChild(gem);
+
+    const name = document.createElement('div');
+    name.className = 'collection-gem-name';
+    name.textContent = earned ? CRYSTAL_NAMES[i] : '???';
+    slot.appendChild(name);
+
+    grid.appendChild(slot);
+  }
+
+  showScreen('collection-screen');
+}
+
+// ============================= CONFETTI =============================
+function showConfetti(screenId) {
+  const container = document.getElementById(screenId);
+  const colors = ['#FFD700','#9B59B6','#3498DB','#E74C3C','#44FF88','#FF9933','#FF4488','#44AAFF'];
+  for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[i % colors.length]};
+      animation-delay: ${(Math.random() * 1.4).toFixed(2)}s;
+      animation-duration: ${(1.4 + Math.random() * 0.9).toFixed(2)}s;
+      width: ${6 + Math.floor(Math.random() * 8)}px;
+      height: ${6 + Math.floor(Math.random() * 8)}px;
+      border-radius: ${Math.random() < 0.4 ? '50%' : '3px'};
+    `;
+    container.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+// ============================= INIT =================================
+updateCrystalCountBadge();
+showScreen('start-screen');
+</script>
+</body>
+</html>
