@@ -1073,7 +1073,7 @@
 
     <!-- Middle: question + progress -->
     <div id="boss-middle">
-      <div id="boss-progress">Race to tree <span id="boss-finish-num">10</span>!</div>
+      <div id="boss-progress">Question <span id="boss-round-num">1</span>/5</div>
       <div id="boss-question">Count on <span class="hop-num" id="boss-hop-display">?</span> from <span class="hop-num" id="boss-start-display">?</span>!</div>
     </div>
 
@@ -1177,13 +1177,15 @@ const G = {
   bossViewStart:   1,
   bossHop:         0,
   bossTarget:      0,
-  bossFirstTry:    true,
   kongStart:       1,
   kongViewStart:   1,
   bossIsCountBack: false,
   bossInput:       '',
   bossInteracting: true,
   playerWon:       false,
+  bossRound:       0,
+  bossQuestions:   [],
+  bossMisses:      0,
 };
 
 const RACE_STEPS = 5;
@@ -1192,7 +1194,7 @@ const BOSS_FINISH = 10;
 const LEVEL_CFG = {
   1: { char: 'chimpanzee', label: 'Chimp',     treeCount: 10, maxHop: 5, startMin: 1,  startMax: 1  },
   2: { char: 'orangutan',  label: 'Orangutan', treeCount: 10, maxHop: 9, startMin: 1,  startMax: 1  },
-  3: { char: 'gorilla',    label: 'Gorilla',   treeCount: 0,  maxHop: 9, startMin: 1,  startMax: 1  },
+  3: { char: 'gorilla',    label: 'Gorilla',   treeCount: 0,  maxHop: 9, startMin: 0,  startMax: 0  },
 };
 
 const TREE_IMGS = [
@@ -1268,7 +1270,7 @@ function startGame() {
   // Reset state
   G.round        = 0;
   G.startTree    = 0;
-  G.viewStart    = 1;
+  G.viewStart    = cfg.startMin;
   G.totalMisses  = 0;
   G.roundMisses  = 0;
   G.firstTry     = true;
@@ -1398,16 +1400,16 @@ function renderTrees() {
     slot.className = 'tree-slot';
     slot.dataset.num = num;
 
-    const treeImg = document.createElement('img');
-    treeImg.className = 'tree-img';
-    treeImg.src = treeImg(num);
-    treeImg.alt = `Tree ${num}`;
+    const treeImgEl = document.createElement('img');
+    treeImgEl.className = 'tree-img';
+    treeImgEl.src = treeImg(num);
+    treeImgEl.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
     numEl.className = 'tree-num';
     numEl.textContent = num;
 
-    slot.appendChild(treeImg);
+    slot.appendChild(treeImgEl);
     slot.appendChild(numEl);
 
     if (num === G.startTree) {
@@ -1475,16 +1477,16 @@ function scrollTrees(newViewStart, callback) {
     slot.style.flex = '0 0 auto';
     slot.style.width = slotWidth + 'px';
 
-    const treeImg = document.createElement('img');
-    treeImg.className = 'tree-img';
-    treeImg.src = treeImg(num);
-    treeImg.alt = `Tree ${num}`;
+    const treeImgEl = document.createElement('img');
+    treeImgEl.className = 'tree-img';
+    treeImgEl.src = treeImg(num);
+    treeImgEl.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
     numEl.className = 'tree-num';
     numEl.textContent = num;
 
-    slot.appendChild(treeImg);
+    slot.appendChild(treeImgEl);
     slot.appendChild(numEl);
 
     if (num === G.startTree) {
@@ -1924,23 +1926,87 @@ function cutsceneAdvance() {
 }
 
 // ============================= BOSS RACE =========================
+function generateBossQuestions() {
+  const cfg = LEVEL_CFG[G.level];
+  const startPos = cfg.startMin;
+  const maxHop = cfg.maxHop;
+  const target = BOSS_FINISH;
+  const steps = RACE_STEPS;
+
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const positions = [startPos];
+    let valid = true;
+
+    for (let i = 1; i < steps; i++) {
+      const cur = positions[i - 1];
+      const remaining = steps - i;
+
+      const lo = Math.max(0, cur - maxHop, target - remaining * maxHop);
+      const hi = Math.min(BOSS_FINISH, cur + maxHop, target + remaining * maxHop);
+
+      if (lo > hi) { valid = false; break; }
+
+      const candidates = [];
+      for (let p = lo; p <= hi; p++) {
+        if (p !== cur) candidates.push(p);
+      }
+      if (candidates.length === 0) { valid = false; break; }
+
+      positions.push(candidates[Math.floor(Math.random() * candidates.length)]);
+    }
+
+    if (!valid) continue;
+
+    const lastPos = positions[steps - 1];
+    const lastHop = Math.abs(target - lastPos);
+    if (lastHop < 1 || lastHop > maxHop || lastPos === target) continue;
+
+    positions.push(target);
+
+    const questions = [];
+    for (let i = 0; i < steps; i++) {
+      questions.push({
+        start: positions[i],
+        target: positions[i + 1],
+        hop: Math.abs(positions[i + 1] - positions[i]),
+        isCountBack: positions[i + 1] < positions[i],
+      });
+    }
+    return questions;
+  }
+
+  const totalDist = target - startPos;
+  const baseHop = Math.floor(totalDist / steps);
+  const remainder = totalDist % steps;
+  const questions = [];
+  let pos = startPos;
+  for (let i = 0; i < steps; i++) {
+    const hop = baseHop + (i < remainder ? 1 : 0);
+    questions.push({ start: pos, target: pos + hop, hop, isCountBack: false });
+    pos += hop;
+  }
+  return questions;
+}
+
 function startBossRace() {
-  G.bossStart      = 1;
-  G.bossViewStart  = 1;
+  const bossStartPos = LEVEL_CFG[G.level].startMin;
+  G.bossStart      = bossStartPos;
+  G.bossViewStart  = bossStartPos;
   G.bossHop        = 0;
   G.bossTarget     = 0;
-  G.bossFirstTry   = true;
-  G.kongStart      = 1;
-  G.kongViewStart  = 1;
+  G.kongStart      = bossStartPos;
+  G.kongViewStart  = bossStartPos;
   G.bossIsCountBack = false;
   G.bossInput      = '';
   G.bossInteracting = true;
+  G.bossRound      = 0;
+  G.bossQuestions  = generateBossQuestions();
+  G.bossMisses     = 0;
 
   const cfg = LEVEL_CFG[G.level];
   const isKeypad = cfg.treeCount === 0;
 
   document.getElementById('boss-player-tag').textContent = cfg.label.toUpperCase();
-  document.getElementById('boss-finish-num').textContent = BOSS_FINISH;
 
   // Show tree rows or keypad based on level
   // Kong's row is always visible; player's row is replaced by keypad in L3
@@ -1967,58 +2033,48 @@ function updateBossPositions() {
 
 function nextBossQuestion() {
   const cfg = LEVEL_CFG[G.level];
-  const maxPossible = Math.min(cfg.maxHop, BOSS_FINISH - G.bossStart);
-  const hop = 1 + Math.floor(Math.random() * maxPossible);
-  G.bossHop      = hop;
-  G.bossTarget   = G.bossStart + hop;  // movement is always forward
-  G.bossFirstTry = true;
+  G.bossRound++;
   G.bossInput    = '';
   G.bossInteracting = true;
 
-  // 50% chance of subtraction question (math only — movement stays forward)
-  G.bossIsCountBack = Math.random() < 0.5;
+  const q = G.bossQuestions[G.bossRound - 1];
+  G.bossHop        = q.hop;
+  G.bossTarget     = q.target;
+  G.bossIsCountBack = q.isCountBack;
+
+  document.getElementById('boss-progress').innerHTML =
+    `Question <span id="boss-round-num">${G.bossRound}</span>/${RACE_STEPS}`;
 
   if (G.bossIsCountBack) {
-    // Subtraction: "subFrom − hop = target" where subFrom = target + hop
-    const subFrom = G.bossTarget + hop;
     if (Math.random() < 0.5) {
       document.getElementById('boss-question').innerHTML =
-        `Count back <span class="hop-num">${hop}</span> from <span class="hop-num">${subFrom}</span>!`;
+        `Count back <span class="hop-num">${q.hop}</span> from <span class="hop-num">${G.bossStart}</span>!`;
     } else {
       document.getElementById('boss-question').innerHTML =
-        `<span class="hop-num">${subFrom}</span> &minus; <span class="hop-num">${hop}</span> = ?`;
+        `<span class="hop-num">${G.bossStart}</span> &minus; <span class="hop-num">${q.hop}</span> = ?`;
     }
   } else {
     if (Math.random() < 0.5) {
       document.getElementById('boss-question').innerHTML =
-        `Count on <span class="hop-num">${hop}</span> from <span class="hop-num">${G.bossStart}</span>!`;
+        `Count on <span class="hop-num">${q.hop}</span> from <span class="hop-num">${G.bossStart}</span>!`;
     } else {
       document.getElementById('boss-question').innerHTML =
-        `<span class="hop-num">${G.bossStart}</span> + <span class="hop-num">${hop}</span> = ?`;
+        `<span class="hop-num">${G.bossStart}</span> + <span class="hop-num">${q.hop}</span> = ?`;
     }
   }
 
   if (cfg.treeCount > 0) {
-    // Check if player's target is beyond visible area
+    // Ensure both start and target trees are visible
+    const lo = Math.min(G.bossStart, G.bossTarget);
+    const hi = Math.max(G.bossStart, G.bossTarget);
     const playerViewEnd = G.bossViewStart + cfg.treeCount - 1;
-    if (G.bossTarget > playerViewEnd) {
-      // Scroll both rows together so they stay synced
-      scrollBossTreeRow('boss-tree-row', 'boss-tree-row-wrap', 'bossViewStart', G.bossStart, () => {
-        renderBossTrees();
-      });
-      // Sync Kong's view to same position
-      const kongNeedsScroll = G.bossStart > G.kongViewStart;
-      if (kongNeedsScroll) {
-        scrollBossTreeRow('kong-tree-row', 'kong-tree-row-wrap', 'kongViewStart', G.bossStart, () => {
-          renderKongTrees();
-        });
-      } else {
-        renderKongTrees();
-      }
-    } else {
-      renderBossTrees();
-      renderKongTrees();
+    if (lo < G.bossViewStart || hi > playerViewEnd) {
+      let newViewStart = Math.max(0, hi - cfg.treeCount + 1);
+      if (lo < newViewStart) newViewStart = lo;
+      G.bossViewStart = newViewStart;
     }
+    renderBossTrees();
+    renderKongTrees();
   } else {
     document.getElementById('boss-keypad-display').textContent = '?';
     // Update boss keypad flanking trees
@@ -2063,16 +2119,16 @@ function renderBossTrees() {
     slot.className = 'tree-slot';
     slot.dataset.num = num;
 
-    const treeImg = document.createElement('img');
-    treeImg.className = 'tree-img';
-    treeImg.src = treeImg(num);
-    treeImg.alt = `Tree ${num}`;
+    const treeImgEl = document.createElement('img');
+    treeImgEl.className = 'tree-img';
+    treeImgEl.src = treeImg(num);
+    treeImgEl.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
     numEl.className = 'tree-num';
     numEl.textContent = num;
 
-    slot.appendChild(treeImg);
+    slot.appendChild(treeImgEl);
     slot.appendChild(numEl);
 
     if (num === G.bossStart) {
@@ -2082,7 +2138,7 @@ function renderBossTrees() {
       apeEl.src = `assets/${cfg.char}-idle.png`;
       apeEl.alt = 'Ape';
       slot.appendChild(apeEl);
-    } else if (num > G.bossStart) {
+    } else if (G.bossIsCountBack ? num < G.bossStart : num > G.bossStart) {
       slot.onclick = () => onBossTreeClick(num);
     }
 
@@ -2115,16 +2171,16 @@ function renderKongTrees() {
     slot.className = 'tree-slot';
     slot.dataset.num = num;
 
-    const treeImg = document.createElement('img');
-    treeImg.className = 'tree-img';
-    treeImg.src = treeImg(num);
-    treeImg.alt = `Tree ${num}`;
+    const treeImgEl = document.createElement('img');
+    treeImgEl.className = 'tree-img';
+    treeImgEl.src = treeImg(num);
+    treeImgEl.alt = `Tree ${num}`;
 
     const numEl = document.createElement('div');
     numEl.className = 'tree-num';
     numEl.textContent = num;
 
-    slot.appendChild(treeImg);
+    slot.appendChild(treeImgEl);
     slot.appendChild(numEl);
 
     if (num === G.kongStart) {
@@ -2183,15 +2239,15 @@ function scrollBossTreeRow(rowId, wrapId, viewStartKey, newViewStart, callback) 
     slot.style.flex = '0 0 auto';
     slot.style.width = slotWidth + 'px';
 
-    const treeImg = document.createElement('img');
-    treeImg.className = 'tree-img';
-    treeImg.src = treeImg(num);
+    const treeImgEl = document.createElement('img');
+    treeImgEl.className = 'tree-img';
+    treeImgEl.src = treeImg(num);
 
     const numEl = document.createElement('div');
     numEl.className = 'tree-num';
     numEl.textContent = num;
 
-    slot.appendChild(treeImg);
+    slot.appendChild(treeImgEl);
     slot.appendChild(numEl);
 
     // Show relevant character on their start tree
@@ -2233,7 +2289,9 @@ function scrollBossTreeRow(rowId, wrapId, viewStartKey, newViewStart, callback) 
 
 function advanceKong(amount, callback) {
   const cfg = LEVEL_CFG[G.level];
-  G.kongStart = Math.min(G.kongStart + amount, BOSS_FINISH);
+  const targetPos = Math.min(G.kongStart + amount, BOSS_FINISH);
+
+  G.kongStart = targetPos;
   updateBossPositions();
 
   const kongTreeCount = cfg.treeCount || BOSS_FINISH;
@@ -2291,11 +2349,18 @@ function bossHopAnimation(callback) {
 
   const bossArea = document.getElementById('boss-area');
 
-  // Build hop list from start to target
+  // Build hop list from start to target (forward or backward)
   const hops = [];
-  for (let t = G.bossStart; t <= G.bossTarget; t++) {
-    const idx = t - G.bossViewStart;
-    if (slots[idx]) hops.push(slots[idx]);
+  if (G.bossIsCountBack) {
+    for (let t = G.bossStart; t >= G.bossTarget; t--) {
+      const idx = t - G.bossViewStart;
+      if (slots[idx]) hops.push(slots[idx]);
+    }
+  } else {
+    for (let t = G.bossStart; t <= G.bossTarget; t++) {
+      const idx = t - G.bossViewStart;
+      if (slots[idx]) hops.push(slots[idx]);
+    }
   }
 
   let hopIdx = 0;
@@ -2404,51 +2469,35 @@ function bossHandleAnswer(correct) {
   const cfg = LEVEL_CFG[G.level];
 
   if (correct) {
-    if (cfg.treeCount === 0) {
-      // Keypad mode — do jump animation from start tree to dest tree
-      bossKeypadJumpAnimation(() => {
-        G.bossStart = Math.min(G.bossTarget, BOSS_FINISH);
-        updateBossPositions();
-        if (G.bossStart >= BOSS_FINISH) {
-          setTimeout(() => { G.playerWon = true; endBossRace(); }, 400);
-          return;
-        }
-        if (G.bossFirstTry) {
-          setTimeout(() => {
-            advanceKong(G.bossHop, () => {
-              if (G.kongStart >= BOSS_FINISH) { G.playerWon = false; endBossRace(); }
-              else { setTimeout(nextBossQuestion, 400); }
-            });
-          }, 600);
-        } else {
-          setTimeout(nextBossQuestion, 400);
-        }
-      });
-    } else {
-      // Tree mode — SFX already played by hop animation
-      G.bossStart = Math.min(G.bossTarget, BOSS_FINISH);
-      updateBossPositions();
-      if (G.bossStart >= BOSS_FINISH) {
-        setTimeout(() => { G.playerWon = true; endBossRace(); }, 600);
+    function afterCorrectAdvance() {
+      if (G.bossRound >= RACE_STEPS) {
+        G.playerWon = true;
+        endBossRace();
         return;
       }
-      if (G.bossFirstTry) {
-        setTimeout(() => {
-          advanceKong(G.bossHop, () => {
-            if (G.kongStart >= BOSS_FINISH) { G.playerWon = false; endBossRace(); }
-            else { setTimeout(nextBossQuestion, 400); }
-          });
-        }, 800);
-      } else {
-        setTimeout(nextBossQuestion, 600);
-      }
+      setTimeout(() => {
+        advanceKong(1, () => {
+          setTimeout(nextBossQuestion, 300);
+        });
+      }, 300);
+    }
+
+    if (cfg.treeCount === 0) {
+      bossKeypadJumpAnimation(() => {
+        G.bossStart = G.bossTarget;
+        updateBossPositions();
+        afterCorrectAdvance();
+      });
+    } else {
+      G.bossStart = G.bossTarget;
+      updateBossPositions();
+      afterCorrectAdvance();
     }
 
   } else {
-    G.bossFirstTry = false;
+    G.bossMisses++;
 
     if (cfg.treeCount === 0) {
-      // Keypad mode — fall animation
       play('ouch');
       const ape = document.getElementById('boss-keypad-ape');
       ape.src = `assets/${cfg.char}-fall.png`;
@@ -2470,20 +2519,27 @@ function bossHandleAnswer(correct) {
       play('ouch');
     }
 
-    // Kong advances by half the hop (min 1)
-    const kongAdvance = Math.max(1, Math.floor(G.bossHop / 2));
+    // Each miss: 50% chance Kong sprints to finish (guaranteed at 5+ misses)
+    const kongWins = G.bossMisses >= 5 || Math.random() < 0.5;
+
     setTimeout(() => {
-      advanceKong(kongAdvance, () => {
-        if (G.kongStart >= BOSS_FINISH) {
+      if (kongWins) {
+        advanceKong(BOSS_FINISH - G.kongStart, () => {
           G.playerWon = false;
           endBossRace();
+        });
+      } else {
+        const advance = Math.min(2, BOSS_FINISH - G.kongStart - 1);
+        if (advance > 0) {
+          advanceKong(advance, () => {
+            G.bossInteracting = true;
+          });
         } else {
           G.bossInteracting = true;
         }
-      });
+      }
     }, 600);
 
-    // Reset player input
     G.bossInput = '';
     if (cfg.treeCount === 0) {
       document.getElementById('boss-keypad-display').textContent = '?';
